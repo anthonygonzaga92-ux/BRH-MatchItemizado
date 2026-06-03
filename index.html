@@ -3,672 +3,912 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>BRH Match Validator · CA1 Paisajismo</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<title>BRH Match Validator</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
 <style>
-*{box-sizing:border-box;margin:0;padding:0;}
-:root{
-  --bg:#0f1117;--s1:#181c27;--s2:#1e2334;--s3:#242840;
-  --border:#2a3050;--border2:#3a4060;
-  --accent:#00d4aa;--accent2:#3b82f6;--accent3:#a78bfa;
-  --ok:#10b981;--warn:#f59e0b;--err:#ef4444;--info:#3b82f6;
-  --text:#e2e8f0;--muted:#64748b;--muted2:#94a3b8;
-  --mono:'IBM Plex Mono',monospace;--sans:'IBM Plex Sans',sans-serif;
-  --radius:8px;--radius-lg:12px;
-}
-html{scroll-behavior:smooth;}
-body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:100vh;line-height:1.5;}
-
-/* HEADER */
-.header{background:var(--s1);border-bottom:1px solid var(--border);padding:0 2rem;height:56px;display:flex;align-items:center;gap:14px;position:sticky;top:0;z-index:100;}
-.logo-box{width:34px;height:34px;background:var(--accent);border-radius:6px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
-.logo-box svg{width:18px;height:18px;stroke:#0a1a14;fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round;}
-.header-title{font-family:var(--mono);font-size:14px;font-weight:600;color:var(--text);}
-.header-sub{font-size:11px;color:var(--muted);font-family:var(--sans);}
-.header-tag{margin-left:auto;font-size:10px;font-family:var(--mono);background:#0d2a20;color:var(--accent);border:1px solid #1a4a32;padding:3px 10px;border-radius:3px;letter-spacing:.04em;}
-.header-ver{font-size:10px;font-family:var(--mono);color:var(--muted);margin-left:8px;}
-
-/* MAIN */
-.main{max-width:1100px;margin:0 auto;padding:2rem 1.5rem;}
-
-/* SECTION TITLE */
-.sec-title{font-family:var(--mono);font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;margin-bottom:.75rem;display:flex;align-items:center;gap:8px;}
-.sec-title::after{content:'';flex:1;height:.5px;background:var(--border);}
-
-/* UPLOAD PANEL */
-.upload-panel{background:var(--s1);border:1px solid var(--border);border-radius:var(--radius-lg);padding:1.5rem;margin-bottom:1.5rem;}
-.upload-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:1.25rem;}
-.upload-card{background:var(--s2);border:1.5px dashed var(--border2);border-radius:var(--radius);padding:1.25rem;cursor:pointer;transition:all .2s;position:relative;min-height:110px;}
-.upload-card:hover{border-color:var(--accent);background:var(--s3);}
-.upload-card.loaded{border-style:solid;border-color:var(--ok);background:#041a10;}
-.upload-card input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;}
-.uc-src{font-family:var(--mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;margin-bottom:5px;}
-.uc-name{font-size:13px;font-weight:600;color:var(--text);}
-.uc-hint{font-size:11px;color:var(--muted);margin-top:3px;}
-.uc-status{display:flex;align-items:center;gap:7px;margin-top:10px;}
-.dot{width:8px;height:8px;border-radius:50%;background:var(--border2);transition:background .3s;}
-.dot.ok{background:var(--ok);}
-.dot.loading{background:var(--warn);animation:pulse 1s infinite;}
-@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.4;}}
-.uc-info{font-size:11px;color:var(--muted);font-family:var(--mono);}
-.uc-info.ok{color:var(--ok);}
-
-/* TABS */
-.tab-row{display:flex;gap:2px;margin-bottom:1rem;}
-.tab{font-size:11px;font-family:var(--mono);padding:5px 16px;border-radius:4px 4px 0 0;border:1px solid var(--border);border-bottom:none;background:var(--s2);color:var(--muted);cursor:pointer;transition:.15s;letter-spacing:.03em;}
-.tab:hover{color:var(--text);}
-.tab.active{background:var(--s1);color:var(--accent);border-color:var(--accent);}
-.tab-panel{display:none;}
-.tab-panel.active{display:block;}
-
-/* PASTE AREA */
-.paste-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
-.paste-label{font-family:var(--mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;margin-bottom:5px;}
-textarea{width:100%;background:var(--s2);border:1px solid var(--border);border-radius:var(--radius);color:var(--text);font-family:var(--mono);font-size:10.5px;padding:.75rem;resize:vertical;min-height:100px;transition:border-color .2s;}
-textarea:focus{outline:none;border-color:var(--accent);}
-textarea::placeholder{color:var(--border2);}
-.paste-hint{font-size:10px;color:var(--muted);font-family:var(--mono);margin-top:4px;}
-.paste-hint.ok{color:var(--ok);}
-
-/* FILTERS ROW */
-.config-row{display:grid;grid-template-columns:1fr auto;gap:12px;align-items:end;margin-bottom:1.25rem;}
-.config-field label{font-family:var(--mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;display:block;margin-bottom:5px;}
-.config-field input{background:var(--s2);border:1px solid var(--border);border-radius:var(--radius);color:var(--text);font-family:var(--mono);font-size:12px;padding:6px 10px;width:100%;transition:border-color .2s;}
-.config-field input:focus{outline:none;border-color:var(--accent);}
-
-/* BTN RUN */
-.btn-run{background:var(--accent);color:#0a1a14;font-family:var(--mono);font-size:13px;font-weight:600;border:none;border-radius:var(--radius);padding:.75rem 2rem;cursor:pointer;letter-spacing:.06em;transition:all .2s;width:100%;display:flex;align-items:center;justify-content:center;gap:8px;}
-.btn-run:hover:not(:disabled){opacity:.85;transform:translateY(-1px);}
-.btn-run:disabled{opacity:.3;cursor:not-allowed;transform:none;}
-.btn-run svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2.5;stroke-linecap:round;}
-
-/* STATS */
-.stats-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:1.25rem;}
-.stat-card{background:var(--s1);border:1px solid var(--border);border-radius:var(--radius);padding:.85rem 1rem;}
-.stat-n{font-size:24px;font-weight:600;font-family:var(--mono);line-height:1;}
-.stat-l{font-size:10px;color:var(--muted);font-family:var(--sans);margin-top:4px;}
-.stat-bar{height:2px;border-radius:1px;margin-top:8px;}
-
-/* FILTER CHIPS */
-.filter-bar{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:1rem;}
-.chip{font-size:11px;font-family:var(--mono);padding:4px 14px;border-radius:3px;border:1px solid var(--border);background:var(--s1);color:var(--muted);cursor:pointer;transition:.15s;letter-spacing:.03em;}
-.chip:hover{color:var(--text);border-color:var(--border2);}
-.chip.active{background:var(--s2);color:var(--text);border-color:var(--accent);}
-
-/* SEARCH */
-.search-wrap{position:relative;margin-bottom:1rem;}
-.search-wrap input{width:100%;background:var(--s1);border:1px solid var(--border);border-radius:var(--radius);color:var(--text);font-family:var(--mono);font-size:12px;padding:8px 12px 8px 36px;transition:border-color .2s;}
-.search-wrap input:focus{outline:none;border-color:var(--accent);}
-.search-icon{position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--muted);}
-
-/* TABLE */
-.tbl-wrap{border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;overflow-x:auto;}
-table{width:100%;border-collapse:collapse;table-layout:fixed;min-width:780px;}
-th{font-size:9.5px;font-family:var(--mono);color:var(--muted);text-transform:uppercase;letter-spacing:.08em;padding:9px 10px;border-bottom:1px solid var(--border);background:var(--s1);text-align:left;white-space:nowrap;}
-td{padding:7px 10px;border-bottom:.5px solid var(--border);font-family:var(--sans);vertical-align:middle;word-break:break-word;font-size:12px;color:var(--text);}
-tr:last-child td{border-bottom:none;}
-tr.data-row:hover td{background:var(--s2);transition:background .1s;}
-tr.sec-row td{background:var(--s1);font-size:9.5px;font-family:var(--mono);color:var(--muted);text-transform:uppercase;letter-spacing:.08em;padding:5px 10px;border-bottom:.5px solid var(--border);}
-col.c0{width:13%;}col.c1{width:22%;}col.c2{width:9%;}col.c3{width:22%;}col.c4{width:9%;}col.c5{width:7%;}col.c6{width:18%;}
-
-/* BADGES */
-.badge{display:inline-flex;align-items:center;gap:4px;padding:2px 9px;border-radius:3px;font-size:10px;font-weight:500;font-family:var(--mono);white-space:nowrap;}
-.b-ok{background:#041f12;color:#10b981;border:1px solid #0a3520;}
-.b-warn{background:#231a03;color:#f59e0b;border:1px solid #3d2e08;}
-.b-err{background:#1f0808;color:#ef4444;border:1px solid #3d1010;}
-.b-miss{background:#06112a;color:#3b82f6;border:1px solid #0e2050;}
-.b-only{background:#1a0e2e;color:#a78bfa;border:1px solid #301a55;}
-
-/* VALUE DISPLAY */
-.val-err{color:var(--err);font-family:var(--mono);font-size:11px;font-weight:500;}
-.val-ok{color:var(--muted2);font-family:var(--mono);font-size:11px;}
-.val-na{color:var(--border2);font-family:var(--mono);font-size:11px;}
-.code-cell{font-family:var(--mono);font-size:10.5px;color:var(--accent);}
-
-/* COMMENT INPUT */
-.comment-input{width:100%;background:transparent;border:none;color:var(--muted2);font-family:var(--sans);font-size:11px;outline:none;padding:0;}
-.comment-input:focus{color:var(--text);}
-.comment-input::placeholder{color:var(--border2);}
-
-/* EXPORT BAR */
-.export-bar{display:flex;gap:8px;margin-top:1rem;flex-wrap:wrap;}
-.btn-exp{font-size:11px;font-family:var(--mono);padding:7px 18px;border-radius:var(--radius);border:1px solid var(--border);background:var(--s1);color:var(--text);cursor:pointer;transition:.15s;display:flex;align-items:center;gap:7px;letter-spacing:.03em;}
-.btn-exp:hover{border-color:var(--accent);color:var(--accent);}
-.btn-exp svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;}
-
-/* EMPTY STATE */
-.empty{text-align:center;padding:3.5rem 1rem;}
-.empty-icon{font-size:36px;margin-bottom:.75rem;opacity:.4;}
-.empty-msg{color:var(--muted);font-family:var(--sans);font-size:13px;}
-
-/* FOOTER */
-.footer{text-align:center;padding:2rem;font-size:10px;color:var(--muted);font-family:var(--mono);border-top:1px solid var(--border);margin-top:2rem;}
-
-/* TOAST */
-.toast{position:fixed;bottom:1.5rem;right:1.5rem;background:var(--s3);border:1px solid var(--border2);border-radius:var(--radius);padding:.75rem 1.25rem;font-size:12px;font-family:var(--mono);color:var(--text);opacity:0;transform:translateY(8px);transition:all .3s;pointer-events:none;z-index:999;}
-.toast.show{opacity:1;transform:translateY(0);}
-.toast.ok-t{border-color:var(--ok);color:var(--ok);}
-
-/* RESPONSIVE */
-@media(max-width:700px){
-  .upload-grid,.paste-grid,.stats-grid,.config-row{grid-template-columns:1fr;}
-  .header-sub,.header-ver{display:none;}
-  .main{padding:1rem;}
-  .stats-grid{grid-template-columns:repeat(3,1fr);}
+:root {
+  --bg: #0a0e0d;
+  --surface: #111714;
+  --surface2: #171e1b;
+  --border: #1f2b25;
+  --border2: #2a3d33;
+  --green: #00e87a;
+  --green-dim: #00b85f;
+  --green-muted: #0a2e1c;
+  --amber: #f5a623;
+  --amber-muted: #2e1f0a;
+  --red: #ff4d4d;
+  --red-muted: #2e0a0a;
+  --blue: #4d9fff;
+  --blue-muted: #0a1a2e;
+  --text: #e8f0eb;
+  --text2: #7a9485;
+  --text3: #3d5447;
+  --mono: 'JetBrains Mono', monospace;
+  --display: 'Syne', sans-serif;
 }
 
-/* ANIMATION */
-@keyframes fadeIn{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
-.results-section{animation:fadeIn .3s ease;}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--mono);
+  font-size: 13px;
+  min-height: 100vh;
+}
+
+/* SCANLINE OVERLAY */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,232,122,0.015) 2px, rgba(0,232,122,0.015) 4px);
+  pointer-events: none;
+  z-index: 100;
+}
+
+header {
+  border-bottom: 1px solid var(--border);
+  padding: 14px 28px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: var(--surface);
+}
+
+.logo-icon {
+  width: 34px; height: 34px;
+  background: var(--green);
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--display);
+  font-weight: 800;
+  font-size: 16px;
+  color: #000;
+  flex-shrink: 0;
+}
+
+.logo-text h1 { font-family: var(--display); font-size: 15px; font-weight: 700; color: var(--text); }
+.logo-text p { font-size: 11px; color: var(--text2); margin-top: 1px; }
+
+.header-right { margin-left: auto; display: flex; align-items: center; gap: 20px; }
+.project-tag {
+  font-size: 10px; color: var(--text2);
+  border: 1px solid var(--border2);
+  padding: 4px 10px; border-radius: 4px;
+  background: var(--surface2);
+}
+.project-tag span { color: var(--green); }
+
+main {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 28px 28px;
+}
+
+/* STEP TABS */
+.steps {
+  display: flex;
+  gap: 0;
+  margin-bottom: 24px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+  background: var(--surface);
+}
+.step-btn {
+  flex: 1;
+  padding: 12px 16px;
+  background: transparent;
+  border: none;
+  border-right: 1px solid var(--border);
+  color: var(--text3);
+  font-family: var(--mono);
+  font-size: 11px;
+  cursor: pointer;
+  transition: all 0.15s;
+  display: flex; align-items: center; gap: 8px;
+}
+.step-btn:last-child { border-right: none; }
+.step-btn.active { background: var(--surface2); color: var(--green); }
+.step-btn .step-num {
+  width: 20px; height: 20px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 10px; font-weight: 700;
+  background: var(--border);
+  color: var(--text2);
+  flex-shrink: 0;
+}
+.step-btn.active .step-num { background: var(--green); color: #000; }
+.step-btn.done .step-num { background: var(--green-muted); color: var(--green); }
+.step-btn.done { color: var(--text2); }
+
+/* PANELS */
+.panel { display: none; }
+.panel.active { display: block; }
+
+/* UPLOAD GRID */
+.upload-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.upload-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.upload-card-header {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; gap: 10px;
+  background: var(--surface2);
+}
+
+.source-label {
+  font-size: 9px; font-weight: 700; letter-spacing: 0.1em;
+  text-transform: uppercase; color: var(--text2);
+}
+
+.source-name {
+  font-family: var(--display);
+  font-size: 14px; font-weight: 700; color: var(--text);
+  margin-top: 2px;
+}
+
+.source-sub { font-size: 10px; color: var(--text2); margin-top: 1px; }
+
+.upload-body {
+  padding: 20px 16px;
+  min-height: 120px;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 10px;
+  cursor: pointer;
+  transition: background 0.15s;
+  position: relative;
+}
+.upload-body:hover { background: rgba(0,232,122,0.03); }
+
+.upload-icon {
+  font-size: 28px;
+  color: var(--text3);
+}
+
+.upload-text { font-size: 11px; color: var(--text2); text-align: center; }
+.upload-text strong { display: block; color: var(--text); font-size: 12px; margin-bottom: 4px; }
+
+.file-status {
+  display: flex; align-items: center; gap: 8px;
+  padding: 8px 12px;
+  background: var(--green-muted);
+  border: 1px solid rgba(0,232,122,0.2);
+  border-radius: 6px;
+  width: 100%;
+}
+.file-status .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--green); flex-shrink: 0; }
+.file-status .fname { font-size: 11px; color: var(--green); flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.file-status .fcount { font-size: 10px; color: var(--green-dim); flex-shrink: 0; }
+
+.hidden-input { display: none; }
+
+.row-preview {
+  font-size: 10px; color: var(--text2);
+  margin-top: 8px; width: 100%;
+  padding: 0 4px;
+}
+
+/* TOLERANCE */
+.config-row {
+  display: flex; align-items: center; gap: 16px;
+  padding: 14px 16px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  margin-bottom: 20px;
+}
+.config-label { font-size: 11px; color: var(--text2); flex-shrink: 0; }
+.config-label span { display: block; font-size: 9px; color: var(--text3); margin-top: 2px; }
+
+input[type=number] {
+  width: 100px;
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  border-radius: 5px;
+  color: var(--green);
+  font-family: var(--mono);
+  font-size: 14px;
+  padding: 6px 10px;
+  outline: none;
+}
+input[type=number]:focus { border-color: var(--green); }
+
+.detected-cols {
+  font-size: 10px; color: var(--text2);
+  margin-left: auto;
+}
+.detected-cols code {
+  color: var(--green);
+  background: var(--green-muted);
+  padding: 2px 6px;
+  border-radius: 3px;
+  margin: 0 2px;
+}
+
+/* RUN BUTTON */
+.run-btn {
+  width: 100%;
+  padding: 14px;
+  background: var(--green);
+  border: none;
+  border-radius: 8px;
+  color: #000;
+  font-family: var(--display);
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+  letter-spacing: 0.05em;
+}
+.run-btn:hover { background: #00ff88; transform: translateY(-1px); }
+.run-btn:disabled { background: var(--border2); color: var(--text3); cursor: not-allowed; transform: none; }
+
+/* RESULTS */
+.results-header {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.stat-tile {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 14px 16px;
+}
+.stat-tile .stl { font-size: 9px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text2); margin-bottom: 6px; }
+.stat-tile .stv { font-family: var(--display); font-size: 26px; font-weight: 800; }
+.stat-tile.green .stv { color: var(--green); }
+.stat-tile.amber .stv { color: var(--amber); }
+.stat-tile.red .stv { color: var(--red); }
+.stat-tile.blue .stv { color: var(--blue); }
+
+/* MATCH TABLE */
+.match-filters {
+  display: flex; gap: 8px; margin-bottom: 14px; flex-wrap: wrap;
+}
+.mf-btn {
+  padding: 5px 14px;
+  border-radius: 20px;
+  border: 1px solid var(--border2);
+  background: transparent;
+  color: var(--text2);
+  font-family: var(--mono);
+  font-size: 11px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.mf-btn:hover { border-color: var(--green); color: var(--green); }
+.mf-btn.active { background: var(--green-muted); border-color: var(--green); color: var(--green); }
+
+.table-wrap {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 11px;
+}
+
+thead { background: var(--surface2); }
+thead th {
+  padding: 10px 14px;
+  text-align: left;
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text2);
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+}
+
+tbody tr { border-bottom: 1px solid var(--border); transition: background 0.1s; }
+tbody tr:last-child { border-bottom: none; }
+tbody tr:hover { background: rgba(0,232,122,0.03); }
+tbody td {
+  padding: 9px 14px;
+  vertical-align: middle;
+}
+
+.code-cell { font-size: 10px; color: var(--text2); white-space: nowrap; }
+.desc-cell { color: var(--text); max-width: 280px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.num-cell { text-align: right; font-weight: 500; }
+.num-ok { color: var(--green); }
+.num-warn { color: var(--amber); }
+.num-diff { text-align: right; font-size: 10px; }
+.diff-ok { color: var(--green); }
+.diff-warn { color: var(--amber); }
+.diff-bad { color: var(--red); }
+
+.status-badge {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 3px 8px; border-radius: 3px;
+  font-size: 9px; font-weight: 700; letter-spacing: 0.08em;
+  text-transform: uppercase; white-space: nowrap;
+}
+.badge-ok { background: var(--green-muted); color: var(--green); border: 1px solid rgba(0,232,122,0.2); }
+.badge-warn { background: var(--amber-muted); color: var(--amber); border: 1px solid rgba(245,166,35,0.2); }
+.badge-missing-exp { background: var(--red-muted); color: var(--red); border: 1px solid rgba(255,77,77,0.2); }
+.badge-missing-rev { background: var(--blue-muted); color: var(--blue); border: 1px solid rgba(77,159,255,0.2); }
+
+/* EXPORT */
+.export-row {
+  margin-top: 20px;
+  display: flex; gap: 10px; justify-content: flex-end;
+}
+.exp-btn {
+  padding: 8px 18px;
+  border: 1px solid var(--border2);
+  border-radius: 6px;
+  background: var(--surface2);
+  color: var(--text);
+  font-family: var(--mono);
+  font-size: 11px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.exp-btn:hover { border-color: var(--green); color: var(--green); }
+.exp-btn.primary { background: var(--green); border-color: var(--green); color: #000; font-weight: 700; }
+.exp-btn.primary:hover { background: #00ff88; }
+
+footer {
+  text-align: center;
+  padding: 20px;
+  font-size: 10px;
+  color: var(--text3);
+  border-top: 1px solid var(--border);
+  margin-top: 40px;
+}
+footer span { color: var(--text2); }
+
+.pulse { animation: pulse 2s infinite; }
+@keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:0.4; } }
+
+.tag-rev { background: rgba(77,159,255,0.15); color: var(--blue); padding: 1px 5px; border-radius: 3px; font-size: 9px; }
+.tag-exp { background: rgba(0,232,122,0.12); color: var(--green); padding: 1px 5px; border-radius: 3px; font-size: 9px; }
+
+.und-cell { font-size: 10px; color: var(--text2); }
 </style>
 </head>
 <body>
 
-<header class="header">
-  <div class="logo-box">
-    <svg viewBox="0 0 24 24"><path d="M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v18m0 0h10a2 2 0 0 0 2-2v-4M9 21H5a2 2 0 0 1-2-2v-4m0 0h18"/></svg>
+<header>
+  <div class="logo-icon">B</div>
+  <div class="logo-text">
+    <h1>BRH Match Validator</h1>
+    <p>Validación de metrados · Revit vs Expediente Técnico</p>
   </div>
-  <div>
-    <div class="header-title">BRH Match Validator</div>
-    <div class="header-sub">Validación de partidas · Revit vs Expediente</div>
+  <div class="header-right">
+    <div class="project-tag">Proyecto <span>500122-BERH001</span></div>
+    <div class="project-tag">Sector <span>4 · CA1</span></div>
   </div>
-  <div class="header-tag">BRH · CA1 Paisajismo</div>
-  <div class="header-ver">v1.0</div>
 </header>
 
-<main class="main">
+<main>
 
-  <!-- UPLOAD PANEL -->
-  <div class="upload-panel">
-    <div class="sec-title">Cargar datos</div>
-
-    <div class="tab-row">
-      <div class="tab active" onclick="switchTab('upload')" id="tab-btn-upload">Subir archivos</div>
-      <div class="tab" onclick="switchTab('paste')" id="tab-btn-paste">Pegar CSV</div>
-    </div>
-
-    <!-- TAB UPLOAD -->
-    <div class="tab-panel active" id="tab-upload">
-      <div class="upload-grid">
-        <div class="upload-card" id="card-revit">
-          <input type="file" accept=".csv,.xlsx,.xls" onchange="loadFile(this,'revit')" id="file-revit">
-          <div class="uc-src">Fuente 01 · Revit</div>
-          <div class="uc-name">BRH_Itemizado</div>
-          <div class="uc-hint">CSV o Excel exportado del Schedule de Revit</div>
-          <div class="uc-status">
-            <div class="dot" id="dot-revit"></div>
-            <span class="uc-info" id="info-revit">Haz clic o arrastra el archivo aquí</span>
-          </div>
-        </div>
-        <div class="upload-card" id="card-exp">
-          <input type="file" accept=".csv,.xlsx,.xls" onchange="loadFile(this,'exp')" id="file-exp">
-          <div class="uc-src">Fuente 02 · Expediente</div>
-          <div class="uc-name">Planilla de Metrados</div>
-          <div class="uc-hint">CSV o Excel de la planilla oficial del expediente</div>
-          <div class="uc-status">
-            <div class="dot" id="dot-exp"></div>
-            <span class="uc-info" id="info-exp">Haz clic o arrastra el archivo aquí</span>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- TAB PASTE -->
-    <div class="tab-panel" id="tab-paste">
-      <div class="paste-grid">
-        <div>
-          <div class="paste-label">BRH_Itemizado (Revit)</div>
-          <textarea id="paste-revit" placeholder="CODIGO_PARTIDA,DESCRIPCION,METRADO&#10;01.01.09.02.04.04,Neltuma pallida (Algarrobo),30.000&#10;01.01.09.02.04.05,Colicodendron scabridum,3.000" oninput="parsePaste('revit')"></textarea>
-          <div class="paste-hint" id="hint-paste-revit">Formato: CODIGO, DESCRIPCION, METRADO — una fila por línea</div>
-        </div>
-        <div>
-          <div class="paste-label">Planilla Expediente</div>
-          <textarea id="paste-exp" placeholder="CODIGO_PARTIDA,DESCRIPCION,METRADO&#10;01.01.09.02.04.04,Neltuma pallida (Algarrobo),30.000&#10;01.01.09.02.04.05,Colicodendron scabridum,3.000" oninput="parsePaste('exp')"></textarea>
-          <div class="paste-hint" id="hint-paste-exp">Formato: CODIGO, DESCRIPCION, METRADO — una fila por línea</div>
-        </div>
-      </div>
-    </div>
-
-    <!-- CONFIG -->
-    <div class="config-row" style="margin-top:1rem;">
-      <div class="config-field">
-        <label>Tolerancia de valor (± diferencia permitida)</label>
-        <input type="number" id="tolerance" value="0.05" step="0.01" min="0" max="10" style="max-width:160px;">
-      </div>
-      <div style="font-size:11px;color:var(--muted);font-family:var(--mono);text-align:right;">
-        Columnas detectadas: <span id="col-hint" style="color:var(--muted2);">—</span>
-      </div>
-    </div>
-
-    <button class="btn-run" id="btn-run" onclick="runMatch()" disabled>
-      <svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-      EJECUTAR MATCH
+  <div class="steps">
+    <button class="step-btn active" id="tab1" onclick="goStep(1)">
+      <span class="step-num" id="sn1">1</span> Cargar datos
+    </button>
+    <button class="step-btn" id="tab2" onclick="goStep(2)">
+      <span class="step-num" id="sn2">2</span> Configurar match
+    </button>
+    <button class="step-btn" id="tab3" onclick="goStep(3)">
+      <span class="step-num" id="sn3">3</span> Resultados
     </button>
   </div>
 
-  <!-- RESULTS -->
-  <div id="results-section" style="display:none;" class="results-section">
+  <!-- PANEL 1: CARGAR -->
+  <div class="panel active" id="panel1">
+    <div class="upload-grid">
 
-    <div class="sec-title">Resultados del match</div>
-    <div class="stats-grid" id="stats-grid"></div>
+      <!-- G1: REVIT -->
+      <div class="upload-card">
+        <div class="upload-card-header">
+          <div>
+            <div class="source-label">Fuente G1 · Revit</div>
+            <div class="source-name">BRH_Itemizado</div>
+            <div class="source-sub">Schedule exportado desde Revit (.xlsx)</div>
+          </div>
+          <span class="tag-rev" style="margin-left:auto">REVIT</span>
+        </div>
+        <div class="upload-body" id="drop1" onclick="document.getElementById('fi1').click()"
+             ondragover="ev.preventDefault()" ondrop="handleDrop(event,'g1')">
+          <input type="file" class="hidden-input" id="fi1" accept=".xlsx,.csv" onchange="loadFile(this,'g1')">
+          <div id="state1-empty">
+            <div style="font-size:32px; color:var(--text3); text-align:center">⬆</div>
+            <div class="upload-text"><strong>Arrastra o haz clic para subir</strong>CSV o Excel exportado del Schedule de Revit</div>
+          </div>
+          <div id="state1-loaded" style="display:none; width:100%">
+            <div class="file-status">
+              <div class="dot pulse"></div>
+              <div class="fname" id="fname1">—</div>
+              <div class="fcount" id="fcount1">—</div>
+            </div>
+            <div class="row-preview" id="prev1"></div>
+          </div>
+        </div>
+      </div>
 
-    <div style="display:flex;gap:10px;align-items:center;margin-bottom:.75rem;flex-wrap:wrap;">
-      <div class="filter-bar" id="filter-bar" style="flex:1;margin-bottom:0;">
-        <div class="chip active" data-f="all" onclick="applyFilter(this)">Todos</div>
-        <div class="chip" data-f="ok" onclick="applyFilter(this)">✓ OK</div>
-        <div class="chip" data-f="err" onclick="applyFilter(this)">Valor diferente</div>
-        <div class="chip" data-f="warn" onclick="applyFilter(this)">Nombre diferente</div>
-        <div class="chip" data-f="miss" onclick="applyFilter(this)">Solo expediente</div>
-        <div class="chip" data-f="only-revit" onclick="applyFilter(this)">Solo Revit</div>
+      <!-- G2: EXPEDIENTE -->
+      <div class="upload-card">
+        <div class="upload-card-header">
+          <div>
+            <div class="source-label">Fuente G2 · Expediente</div>
+            <div class="source-name">Planilla de Metrados</div>
+            <div class="source-sub">Excel de la planilla oficial del expediente (.xlsx)</div>
+          </div>
+          <span class="tag-exp" style="margin-left:auto">EXP</span>
+        </div>
+        <div class="upload-body" id="drop2" onclick="document.getElementById('fi2').click()"
+             ondragover="ev.preventDefault()" ondrop="handleDrop(event,'g2')">
+          <input type="file" class="hidden-input" id="fi2" accept=".xlsx,.csv" onchange="loadFile(this,'g2')">
+          <div id="state2-empty">
+            <div style="font-size:32px; color:var(--text3); text-align:center">⬆</div>
+            <div class="upload-text"><strong>Arrastra o haz clic para subir</strong>CSV o Excel de la planilla oficial del expediente</div>
+          </div>
+          <div id="state2-loaded" style="display:none; width:100%">
+            <div class="file-status" style="background:rgba(0,232,122,0.08)">
+              <div class="dot" style="background:var(--green-dim)"></div>
+              <div class="fname" id="fname2">—</div>
+              <div class="fcount" id="fcount2">—</div>
+            </div>
+            <div class="row-preview" id="prev2"></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- PRELOAD BUTTONS -->
+    <div style="background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:14px 16px; margin-bottom:20px;">
+      <div style="font-size:10px; text-transform:uppercase; letter-spacing:0.08em; color:var(--text2); margin-bottom:10px;">⚡ Carga rápida — datos del proyecto Parque Villa Perú-Canadá</div>
+      <div style="display:flex; gap:10px; flex-wrap:wrap;">
+        <button class="exp-btn" onclick="preloadRevit()">Cargar BRH_Itemizado (Revit) · 17 partidas</button>
+        <button class="exp-btn" onclick="preloadExpediente()">Cargar Planilla Metrados (Expediente) · 50 partidas</button>
+        <button class="exp-btn primary" onclick="preloadBoth()">⚡ Cargar ambos archivos</button>
       </div>
     </div>
 
-    <div class="search-wrap">
-      <svg class="search-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-      <input type="text" placeholder="Buscar por código o descripción..." oninput="applySearch(this.value)" id="search-input">
+    <button class="run-btn" id="btn-next1" onclick="goStep(2)" disabled>
+      <span>→</span> Continuar a configuración
+    </button>
+  </div>
+
+  <!-- PANEL 2: CONFIGURAR -->
+  <div class="panel" id="panel2">
+    <div class="config-row">
+      <div class="config-label">
+        Tolerancia de valor
+        <span>± diferencia permitida</span>
+      </div>
+      <input type="number" id="tolerance" value="0.05" step="0.01" min="0" max="10">
+      <div class="detected-cols" style="margin-left:16px">
+        Columnas detectadas:
+        <code>codigo_de_partida</code>
+        <code>descripcion_de_partida</code>
+        <code>unidad</code>
+        <code>metrado</code>
+      </div>
     </div>
 
-    <div class="tbl-wrap">
+    <div style="background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:14px 16px; margin-bottom:20px; font-size:11px; color:var(--text2); line-height:1.7;">
+      <div style="color:var(--text); font-weight:600; margin-bottom:6px; font-family:var(--display)">Lógica de match</div>
+      El match se realiza por <code style="color:var(--green); background:var(--green-muted); padding:1px 5px; border-radius:3px">código de partida</code> exacto.
+      Una partida es <code style="color:var(--green); background:var(--green-muted); padding:1px 5px; border-radius:3px">OK</code> si |metrado_revit − metrado_exp| ≤ tolerancia.
+      Partidas presentes solo en el expediente (no modeladas) se marcan como <code style="color:var(--red); background:var(--red-muted); padding:1px 5px; border-radius:3px">FALTA EN REVIT</code>.
+      Partidas en Revit sin código en el expediente se marcan como <code style="color:var(--blue); background:var(--blue-muted); padding:1px 5px; border-radius:3px">NO EN EXP</code>.
+    </div>
+
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:20px;">
+      <div style="background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:14px 16px;">
+        <div style="font-size:9px; text-transform:uppercase; letter-spacing:0.08em; color:var(--text2); margin-bottom:10px;">Revit — <span style="color:var(--blue)" id="rev-count-conf">0</span> partidas</div>
+        <div id="rev-preview-conf" style="font-size:10px; color:var(--text2); line-height:1.8;"></div>
+      </div>
+      <div style="background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:14px 16px;">
+        <div style="font-size:9px; text-transform:uppercase; letter-spacing:0.08em; color:var(--text2); margin-bottom:10px;">Expediente — <span style="color:var(--green)" id="exp-count-conf">0</span> partidas</div>
+        <div id="exp-preview-conf" style="font-size:10px; color:var(--text2); line-height:1.8;"></div>
+      </div>
+    </div>
+
+    <button class="run-btn" onclick="runMatch()">
+      ⚡ EJECUTAR MATCH
+    </button>
+  </div>
+
+  <!-- PANEL 3: RESULTADOS -->
+  <div class="panel" id="panel3">
+
+    <div class="results-header">
+      <div class="stat-tile green">
+        <div class="stl">Match OK</div>
+        <div class="stv" id="st-ok">—</div>
+      </div>
+      <div class="stat-tile amber">
+        <div class="stl">Diferencia</div>
+        <div class="stv" id="st-diff">—</div>
+      </div>
+      <div class="stat-tile red">
+        <div class="stl">Falta en Revit</div>
+        <div class="stv" id="st-miss-rev">—</div>
+      </div>
+      <div class="stat-tile blue">
+        <div class="stl">No en Expediente</div>
+        <div class="stv" id="st-miss-exp">—</div>
+      </div>
+    </div>
+
+    <div class="match-filters">
+      <button class="mf-btn active" onclick="filterTable('all',this)">Todos</button>
+      <button class="mf-btn" onclick="filterTable('ok',this)">✓ Match OK</button>
+      <button class="mf-btn" onclick="filterTable('diff',this)">⚠ Diferencia</button>
+      <button class="mf-btn" onclick="filterTable('miss-rev',this)">✗ Falta en Revit</button>
+      <button class="mf-btn" onclick="filterTable('miss-exp',this)">? No en Expediente</button>
+    </div>
+
+    <div class="table-wrap">
       <table>
-        <colgroup><col class="c0"><col class="c1"><col class="c2"><col class="c3"><col class="c4"><col class="c5"><col class="c6"></colgroup>
         <thead>
           <tr>
-            <th>Código</th>
-            <th>Descripción Revit</th>
-            <th>Revit</th>
-            <th>Descripción Expediente</th>
-            <th>Exp.</th>
-            <th>Unid</th>
-            <th>Estado / Comentario</th>
+            <th>#</th>
+            <th>Código de partida</th>
+            <th>Descripción</th>
+            <th>Und</th>
+            <th style="text-align:right">Revit</th>
+            <th style="text-align:right">Expediente</th>
+            <th style="text-align:right">Δ Dif.</th>
+            <th style="text-align:right">Δ %</th>
+            <th>Estado</th>
           </tr>
         </thead>
-        <tbody id="match-body"></tbody>
+        <tbody id="result-tbody"></tbody>
       </table>
     </div>
 
-    <div class="export-bar">
-      <button class="btn-exp" onclick="exportCSV()">
-        <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-        Exportar CSV
-      </button>
-      <button class="btn-exp" onclick="exportExcel()">
-        <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-        Exportar Excel
-      </button>
-      <button class="btn-exp" onclick="exportTXT()">
-        <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-        Reporte TXT
-      </button>
-      <button class="btn-exp" onclick="resetAll()" style="margin-left:auto;color:var(--muted);">
-        <svg viewBox="0 0 24 24"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.51"/></svg>
-        Nueva revisión
-      </button>
+    <div class="export-row">
+      <button class="exp-btn" onclick="goStep(1)">← Nueva validación</button>
+      <button class="exp-btn primary" onclick="exportCSV()">⬇ Exportar reporte CSV</button>
     </div>
+
   </div>
 
 </main>
 
-<footer class="footer">
-  BRH Match Validator · Benito Roggio e Hijos S.A. · Proyecto Sullana-Bellavista CA1 · Gonzaga Arquitectos
+<footer>
+  BRH Match Validator · <span>Benito Roggio e Hijos S.A.</span> · Proyecto Sullana-Bellavista CA1 · <span>Gonzaga Arquitectos</span>
 </footer>
 
-<div class="toast" id="toast"></div>
-
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script>
-// ── STATE ────────────────────────────────────────────────
-let dataRevit = [], dataExp = [], matchResults = [];
-let currentFilter = 'all', searchQuery = '';
-const comments = {};
+// ─── DATA STORE ───────────────────────────────────────────────
+let g1 = []; // Revit
+let g2 = []; // Expediente
+let matchResults = [];
+let currentFilter = 'all';
 
-// ── TABS ─────────────────────────────────────────────────
-function switchTab(t) {
-  ['upload','paste'].forEach(id => {
-    document.getElementById('tab-btn-'+id).classList.toggle('active', id===t);
-    document.getElementById('tab-'+id).classList.toggle('active', id===t);
-  });
+// ─── PRE-LOADED DATA ──────────────────────────────────────────
+const REVIT_DATA = [
+  {codigo:'01.01.09.02.02.04', descripcion:"Concreto f'c = 210 kg/cm2", unidad:'M3', metrado:11.70},
+  {codigo:'01.01.09.02.03.01', descripcion:'Emboquillado de cunetas e=0.15 m (Cemento tipo MS)', unidad:'M2', metrado:265.13},
+  {codigo:'01.01.09.02.03.02', descripcion:'Empedrado de camino peatonal e=0.20m', unidad:'M2', metrado:209.56},
+  {codigo:'01.01.09.02.03.03', descripcion:'Pavimento articulado e=0.06 m (adoquin de concreto 20x10x6cm)', unidad:'M2', metrado:32.30},
+  {codigo:'01.01.09.02.03.04', descripcion:'Cobertura de canto rodado 2"-4"', unidad:'M2', metrado:254.44},
+  {codigo:'01.01.09.02.04.04', descripcion:'Cubresuelos en base de canal con 20% piedra', unidad:'M2', metrado:173.78},
+  {codigo:'01.01.09.02.04.05', descripcion:'Cubresuelos Fijadores', unidad:'M2', metrado:58.57},
+  {codigo:'01.01.09.02.04.07', descripcion:'Neltuma pallida (Algarrobo) incluye siembra y transporte', unidad:'UND', metrado:23.00},
+  {codigo:'01.01.09.02.04.08', descripcion:'Muntigia calabura (Cerecillo) incluye siembra y transporte', unidad:'UND', metrado:2.00},
+  {codigo:'01.01.09.02.04.09', descripcion:'Libidibia glabrata (Charán) incluye siembra y transporte', unidad:'UND', metrado:8.00},
+  {codigo:'01.01.09.02.04.10', descripcion:'Encelia Canescens (Charamusco) incluye siembra y transporte', unidad:'UND', metrado:47.00},
+  {codigo:'01.01.09.02.04.11', descripcion:'Galvezia fruticosa(Curil) incluye siembra y transporte', unidad:'UND', metrado:55.00},
+  {codigo:'01.01.09.02.04.12', descripcion:'Trixis cacalioides (Lingo lingo)  incluye siembra y transporte', unidad:'UND', metrado:24.00},
+  {codigo:'01.01.09.02.04.13', descripcion:'Cordia lutea (Overo). incluye siembra y transporte', unidad:'UND', metrado:17.00},
+  {codigo:'01.01.09.02.04.14', descripcion:'Capparis Crotonoides (Satuyo) Incluye siembra y transporte', unidad:'UND', metrado:3.00},
+  {codigo:'01.01.09.02.04.15', descripcion:'Aloe vera (Sábila)  incluye siembra y transporte', unidad:'UND', metrado:45.00},
+  {codigo:'01.01.09.02.05.01', descripcion:'Señalética Informativa monolito 0.20x1.10x0.10m', unidad:'UND', metrado:2.00},
+];
+
+const EXP_DATA = [
+  {codigo:'01.01.09.02.01.01', descripcion:'Excavacion para plataforma sin clasificar', unidad:'m3', metrado:443.0751},
+  {codigo:'01.01.09.02.01.02', descripcion:'Excavación no clasificada p/estructuras menores', unidad:'m3', metrado:29.294},
+  {codigo:'01.01.09.02.01.03', descripcion:'Perfilado en talud', unidad:'m2', metrado:239.76},
+  {codigo:'01.01.09.02.01.04', descripcion:'Refine y nivelacion para estructuras', unidad:'m2', metrado:253.4473},
+  {codigo:'01.01.09.02.01.05', descripcion:'Refine y nivelación en plataforma', unidad:'m2', metrado:442.76},
+  {codigo:'01.01.09.02.01.06', descripcion:'Relleno c/ material afirmado para estructuras', unidad:'m3', metrado:23.6173},
+  {codigo:'01.01.09.02.01.07', descripcion:'Relleno c/ sub base granular para estructuras', unidad:'m3', metrado:36.7695},
+  {codigo:'01.01.09.02.01.08', descripcion:'Relleno c/ material granular clase I (ASTDM 2321)', unidad:'m3', metrado:17.8245},
+  {codigo:'01.01.09.02.01.09', descripcion:'Relleno c/ material de desbroce selecionado', unidad:'m3', metrado:54.7258},
+  {codigo:'01.01.09.02.02.01', descripcion:'Acero de Refuerzo Corrugado fy=4,200 kg/cm2 - estructuras menores', unidad:'kg', metrado:221.97},
+  {codigo:'01.01.09.02.02.02', descripcion:'Encofrado y Desencofrado - O.A. Varios', unidad:'m2', metrado:117.98},
+  {codigo:'01.01.09.02.02.03', descripcion:"Concreto f'c = 100 kg/cm2 - Solado (incluye transporte)", unidad:'m3', metrado:1.5769},
+  {codigo:'01.01.09.02.02.04', descripcion:"Concreto f'c = 210 kg/cm2", unidad:'m3', metrado:11.702},
+  {codigo:'01.01.09.02.02.05', descripcion:'Junta de Aislamiento e=3/4"', unidad:'m', metrado:44.5},
+  {codigo:'01.01.09.02.02.06', descripcion:'Curado de Concreto', unidad:'m2', metrado:169.288},
+  {codigo:'01.01.09.02.03.01', descripcion:'Emboquillado de cunetas e=0.15 m (Cemento tipo MS)', unidad:'m2', metrado:265.13},
+  {codigo:'01.01.09.02.03.02', descripcion:'Empedrado de camino peatonal e=0.20m', unidad:'m2', metrado:209.564},
+  {codigo:'01.01.09.02.03.03', descripcion:'Pavimento articulado e=0.06 m (adoquin de concreto 20x10x6cm)', unidad:'m2', metrado:32.3},
+  {codigo:'01.01.09.02.03.04', descripcion:'Cobertura de canto rodado 2"-4"', unidad:'m2', metrado:254.44},
+  {codigo:'01.01.09.02.03.05', descripcion:'Curado de Concreto', unidad:'m2', metrado:245.13},
+  {codigo:'01.01.09.02.04.01', descripcion:'Preparación y aporte del sustrato', unidad:'m3', metrado:12.8149},
+  {codigo:'01.01.09.02.04.02', descripcion:'Suministro e instalación de hidrogel', unidad:'kg', metrado:2.31},
+  {codigo:'01.01.09.02.04.03', descripcion:'Relleno con material de compost', unidad:'kg', metrado:780.92},
+  {codigo:'01.01.09.02.04.04', descripcion:'Cubresuelos en base de canal con 20% Piedra', unidad:'m2', metrado:173.783},
+  {codigo:'01.01.09.02.04.05', descripcion:'Cubresuelos Fijadores', unidad:'m2', metrado:58.569},
+  {codigo:'01.01.09.02.04.06', descripcion:'Mantenimiento de las especies', unidad:'glb', metrado:1.0},
+  {codigo:'01.01.09.02.04.07', descripcion:'Neltuma pallida (Algarrobo) incluye siembra y transporte', unidad:'und', metrado:23.0},
+  {codigo:'01.01.09.02.04.08', descripcion:'Muntigia calabura (Cerecillo) incluye siembra y transporte', unidad:'und', metrado:2.0},
+  {codigo:'01.01.09.02.04.09', descripcion:'Libidibia glabrata (Charán) incluye siembra y transporte', unidad:'und', metrado:8.0},
+  {codigo:'01.01.09.02.04.10', descripcion:'Encelia Canescens (Charamusco) incluye siembra y transporte', unidad:'und', metrado:47.0},
+  {codigo:'01.01.09.02.04.11', descripcion:'Galvezia fruticosa(Curil) incluye siembra y transporte', unidad:'und', metrado:55.0},
+  {codigo:'01.01.09.02.04.12', descripcion:'Trixis cacalioides (Lingo lingo) incluye siembra y transporte', unidad:'und', metrado:24.0},
+  {codigo:'01.01.09.02.04.13', descripcion:'Cordia lutea (Overo). incluye siembra y transporte', unidad:'und', metrado:17.0},
+  {codigo:'01.01.09.02.04.14', descripcion:'Capparicordis Crotonoides (Satuyo) Incluye siembra y transporte', unidad:'und', metrado:3.0},
+  {codigo:'01.01.09.02.04.15', descripcion:'Aloe vera (Sábila) incluye siembra y transporte', unidad:'und', metrado:45.0},
+  {codigo:'01.01.09.02.04.16', descripcion:'Boerhavia coccinea (Pega pega) incluye siembra y transporte', unidad:'und', metrado:614.9745},
+  {codigo:'01.01.09.02.04.17', descripcion:'Altermanthera peruviana (Hierba blanca) incluye siembra y transporte', unidad:'und', metrado:819.966},
+  {codigo:'01.01.09.02.04.18', descripcion:'Bidens pilosa (Amor seco) incluye siembra y transporte', unidad:'und', metrado:77.6925},
+  {codigo:'01.01.09.02.04.19', descripcion:'Scoparis dulcis (Escobita) incluye siembra y transporte', unidad:'und', metrado:77.6925},
+  {codigo:'01.01.09.02.04.20', descripcion:'Cynodon Dactylon (grama dulce) incluye siembra y transporte', unidad:'und', metrado:138.12},
+  {codigo:'01.01.09.02.04.21', descripcion:'Mulch e=0.05m incluye suministro y instalación', unidad:'m2', metrado:99.2554},
+  {codigo:'01.01.09.02.05.01', descripcion:'Señalética Informativa monolito 0.20x1.10x0.10m', unidad:'und', metrado:2.0},
+  {codigo:'01.01.09.02.06.01', descripcion:'Transporte de material excedente D<=1 Km', unidad:'m3k', metrado:415.6848},
+  {codigo:'01.01.09.02.06.02', descripcion:'Transporte de material excedente D>1 Km', unidad:'m3k', metrado:1433.6},
+  {codigo:'01.01.09.02.06.03', descripcion:'Transporte de material granular D<=1 Km', unidad:'m3k', metrado:85.6429},
+  {codigo:'01.01.09.02.06.04', descripcion:'Transporte de material granular D>1 KM', unidad:'m3k', metrado:1439.0},
+  {codigo:'01.01.09.02.06.05', descripcion:'Transporte de material de revestimiento D<=1 Km', unidad:'m3k', metrado:49.8975},
+  {codigo:'01.01.09.02.06.06', descripcion:'Transporte de material de revestimiento D>1 Km', unidad:'m3k', metrado:34.0},
+  {codigo:'01.01.09.02.06.07', descripcion:'Transporte de material de filtro D<=1 km', unidad:'m3k', metrado:77.1408},
+  {codigo:'01.01.09.02.06.08', descripcion:'Transporte de material de filtro D> 1 km', unidad:'m3k', metrado:1914.0},
+];
+
+// ─── PRELOAD ──────────────────────────────────────────────────
+function preloadRevit() {
+  g1 = REVIT_DATA;
+  showLoaded('g1','BRH_Itemizado-PC.xlsx', g1.length, g1.slice(0,3));
+}
+function preloadExpediente() {
+  g2 = EXP_DATA;
+  showLoaded('g2','01_01_09_02_PARQUEVILLA_PERU-CANADA_OK_.xlsx', g2.length, g2.slice(0,3));
+}
+function preloadBoth() {
+  preloadRevit();
+  preloadExpediente();
 }
 
-// ── FILE LOAD ────────────────────────────────────────────
+function showLoaded(src, filename, count, preview) {
+  const n = src === 'g1' ? '1' : '2';
+  document.getElementById('state'+n+'-empty').style.display = 'none';
+  document.getElementById('state'+n+'-loaded').style.display = 'block';
+  document.getElementById('fname'+n).textContent = filename;
+  document.getElementById('fcount'+n).textContent = count + ' partidas';
+  const prev = preview.map(p =>
+    `<span style="color:var(--text3)">›</span> <span style="color:var(--green)">${p.codigo}</span> ${p.descripcion.substring(0,38)}…`
+  ).join('<br>');
+  document.getElementById('prev'+n).innerHTML = prev;
+  checkReady();
+}
+
+function checkReady() {
+  document.getElementById('btn-next1').disabled = !(g1.length > 0 && g2.length > 0);
+}
+
+// ─── FILE UPLOAD (real xlsx parsing) ─────────────────────────
+function handleDrop(ev, src) {
+  ev.preventDefault();
+  const file = ev.dataTransfer.files[0];
+  if (file) parseFile(file, src);
+}
+
 function loadFile(input, src) {
   const file = input.files[0];
-  if (!file) return;
-  setDot(src, 'loading');
-  setInfo(src, 'Leyendo...');
+  if (file) parseFile(file, src);
+}
+
+function parseFile(file, src) {
   const reader = new FileReader();
-  const isXLSX = file.name.match(/\.xlsx?$/i);
-  if (isXLSX) {
-    reader.onload = e => {
-      try {
-        const wb = XLSX.read(new Uint8Array(e.target.result), {type:'array'});
-        const ws = wb.Sheets[wb.SheetNames[0]];
-        const csv = XLSX.utils.sheet_to_csv(ws);
-        processData(csv, src, file.name);
-      } catch(err) { setError(src); }
-    };
-    reader.readAsArrayBuffer(file);
-  } else {
-    reader.onload = e => processData(e.target.result, src, file.name);
-    reader.readAsText(file, 'utf-8');
-  }
+  reader.onload = function(e) {
+    const data = new Uint8Array(e.target.result);
+    const wb = XLSX.read(data, {type:'array'});
+
+    if (src === 'g1') {
+      // BRH Itemizado: clean table, row 0 = headers
+      const ws = wb.Sheets[wb.SheetNames[0]];
+      const rows = XLSX.utils.sheet_to_json(ws, {header:1});
+      const parsed = [];
+      for (let i = 1; i < rows.length; i++) {
+        const r = rows[i];
+        if (!r[0] || !String(r[0]).startsWith('01.')) continue;
+        parsed.push({
+          codigo: String(r[0]).trim(),
+          descripcion: String(r[1]||'').trim(),
+          unidad: String(r[2]||'').trim(),
+          metrado: parseFloat(r[3])||0
+        });
+      }
+      g1 = parsed;
+      showLoaded('g1', file.name, g1.length, g1.slice(0,3));
+    } else {
+      // Expediente: complex layout, use R. METRADOS sheet
+      const sheetName = wb.SheetNames.includes('R. METRADOS') ? 'R. METRADOS' : wb.SheetNames[0];
+      const ws = wb.Sheets[sheetName];
+      const rows = XLSX.utils.sheet_to_json(ws, {header:1});
+      const parsed = [];
+      for (let i = 0; i < rows.length; i++) {
+        let r = rows[i].filter(v => v !== null && v !== undefined && v !== '');
+        if (!r.length) continue;
+        let first = String(r[0]).trim();
+        if (first.toLowerCase() === 'ok') { r = r.slice(1); first = String(r[0]||'').trim(); }
+        if (!first.startsWith('01.01.09.02') || first.length <= 14) continue;
+        if (r.length >= 4) {
+          const m = parseFloat(r[3]);
+          if (!isNaN(m)) parsed.push({
+            codigo: first,
+            descripcion: String(r[1]||'').trim(),
+            unidad: String(r[2]||'').trim(),
+            metrado: m
+          });
+        }
+      }
+      g2 = parsed;
+      showLoaded('g2', file.name, g2.length, g2.slice(0,3));
+    }
+  };
+  reader.readAsArrayBuffer(file);
 }
 
-function processData(text, src, fname) {
-  const rows = parseCSV(text);
-  if (src === 'revit') {
-    dataRevit = rows;
-    document.getElementById('card-revit').classList.add('loaded');
-  } else {
-    dataExp = rows;
-    document.getElementById('card-exp').classList.add('loaded');
-  }
-  setDot(src, rows.length > 0 ? 'ok' : 'err');
-  setInfo(src, rows.length > 0 ? `✓ ${rows.length} partidas cargadas` : '⚠ No se detectaron filas válidas', rows.length > 0);
-  checkReady();
-  showToast(`${fname}: ${rows.length} partidas`, 'ok');
+// ─── NAVIGATION ───────────────────────────────────────────────
+function goStep(n) {
+  [1,2,3].forEach(i => {
+    document.getElementById('panel'+i).classList.toggle('active', i===n);
+    document.getElementById('tab'+i).classList.toggle('active', i===n);
+  });
+  if (n===2) fillConfPreview();
 }
 
-function setDot(src, state) {
-  const d = document.getElementById('dot-'+src);
-  d.className = 'dot ' + (state==='ok'?'ok':state==='loading'?'loading':'');
-}
-function setInfo(src, msg, ok) {
-  const el = document.getElementById('info-'+src);
-  el.textContent = msg;
-  el.className = 'uc-info' + (ok?' ok':'');
-}
-function setError(src) {
-  setDot(src, '');
-  setInfo(src, '⚠ Error al leer el archivo');
+function fillConfPreview() {
+  document.getElementById('rev-count-conf').textContent = g1.length;
+  document.getElementById('exp-count-conf').textContent = g2.length;
+  document.getElementById('rev-preview-conf').innerHTML = g1.slice(0,6).map(p =>
+    `<div><span style="color:var(--blue)">${p.codigo}</span> — ${p.descripcion.substring(0,40)}</div>`
+  ).join('');
+  document.getElementById('exp-preview-conf').innerHTML = g2.slice(0,6).map(p =>
+    `<div><span style="color:var(--green)">${p.codigo}</span> — ${p.descripcion.substring(0,40)}</div>`
+  ).join('');
 }
 
-// ── PASTE PARSE ───────────────────────────────────────────
-function parsePaste(src) {
-  const text = document.getElementById('paste-'+src).value;
-  const rows = parseCSV(text);
-  if (src==='revit') dataRevit = rows;
-  else dataExp = rows;
-  const hint = document.getElementById('hint-paste-'+src);
-  if (rows.length > 0) {
-    hint.textContent = `✓ ${rows.length} partidas detectadas`;
-    hint.className = 'paste-hint ok';
-  } else {
-    hint.textContent = 'Formato: CODIGO, DESCRIPCION, METRADO';
-    hint.className = 'paste-hint';
-  }
-  checkReady();
-}
-
-// ── CSV PARSER ────────────────────────────────────────────
-function parseCSV(text) {
-  const lines = text.trim().split('\n').filter(l => l.trim());
-  if (lines.length < 2) return [];
-  const sep = lines[0].split(';').length > lines[0].split(',').length ? ';' : ',';
-  const headers = lines[0].split(sep).map(h => h.trim().replace(/"/g,'').toLowerCase()
-    .replace(/\s+/g,'_').normalize('NFD').replace(/[\u0300-\u036f]/g,''));
-  document.getElementById('col-hint').textContent = headers.join(' · ');
-  const rows = [];
-  for (let i = 1; i < lines.length; i++) {
-    const vals = splitCSVLine(lines[i], sep);
-    if (vals.length < 2) continue;
-    const obj = {};
-    headers.forEach((h, idx) => obj[h] = (vals[idx]||'').trim().replace(/^"|"$/g,''));
-    const codigo = obj['codigo_partida'] || obj['codigo_de_partida'] || obj['codigo'] || vals[0] || '';
-    const desc = obj['descripcion_partida'] || obj['descripcion_de_partida'] || obj['descripcion'] || vals[1] || '';
-    const metStr = obj['metrado'] || vals[2] || '0';
-    const metrado = parseFloat(metStr.replace(',','.').replace(/[^\d.-]/g,'')) || 0;
-    const unidad = obj['unidad'] || obj['und'] || obj['unid'] || vals[3] || '';
-    if (codigo.match(/\d{2}\.\d{2}/)) rows.push({ codigo: codigo.trim(), desc: desc.trim(), metrado, unidad });
-  }
-  return rows;
-}
-
-function splitCSVLine(line, sep) {
-  const result = []; let cur = ''; let inQ = false;
-  for (let i = 0; i < line.length; i++) {
-    const c = line[i];
-    if (c === '"') { inQ = !inQ; continue; }
-    if (c === sep && !inQ) { result.push(cur); cur = ''; continue; }
-    cur += c;
-  }
-  result.push(cur);
-  return result;
-}
-
-// ── READY CHECK ───────────────────────────────────────────
-function checkReady() {
-  document.getElementById('btn-run').disabled = !(dataRevit.length > 0 && dataExp.length > 0);
-}
-
-// ── NORMALIZATION ─────────────────────────────────────────
-function normStr(s) {
-  return s.toLowerCase()
-    .normalize('NFD').replace(/[\u0300-\u036f]/g,'')
-    .replace(/\s+/g,' ').trim();
-}
-function numClose(a, b, tol) { return Math.abs(a - b) <= tol; }
-
-// ── MATCH ENGINE ──────────────────────────────────────────
+// ─── MATCH ENGINE ─────────────────────────────────────────────
 function runMatch() {
   const tol = parseFloat(document.getElementById('tolerance').value) || 0.05;
-  const results = [];
   const expMap = {};
-  dataExp.forEach(r => expMap[r.codigo.trim()] = r);
-  const seen = new Set();
+  g2.forEach(p => expMap[p.codigo] = p);
+  const revMap = {};
+  g1.forEach(p => revMap[p.codigo] = p);
 
-  dataRevit.forEach(r => {
-    seen.add(r.codigo);
-    const e = expMap[r.codigo];
-    if (!e) { results.push({...r, expDesc:'—', expMetrado:null, expUnidad:'', status:'only-revit'}); return; }
-    const nameMatch = normStr(r.desc) === normStr(e.desc);
-    const valMatch = numClose(r.metrado, e.metrado, tol);
-    let status = 'ok';
-    if (!valMatch && !nameMatch) status = 'err';
-    else if (!valMatch) status = 'err';
-    else if (!nameMatch) status = 'warn';
-    results.push({...r, expDesc:e.desc, expMetrado:e.metrado, expUnidad:e.unidad, status});
-  });
+  matchResults = [];
 
-  dataExp.forEach(r => {
-    if (!seen.has(r.codigo)) {
-      results.push({codigo:r.codigo, desc:'—', metrado:null, unidad:'', expDesc:r.desc, expMetrado:r.metrado, expUnidad:r.unidad, status:'miss'});
+  // Partidas en Revit
+  g1.forEach(p => {
+    const exp = expMap[p.codigo];
+    if (!exp) {
+      matchResults.push({...p, metrado_exp: null, diff: null, pct: null, status:'miss-exp'});
+    } else {
+      const diff = p.metrado - exp.metrado;
+      const pct = exp.metrado !== 0 ? (diff/exp.metrado)*100 : 0;
+      const status = Math.abs(diff) <= tol ? 'ok' : 'diff';
+      matchResults.push({...p, metrado_exp: exp.metrado, diff, pct, status});
     }
   });
 
-  matchResults = results;
-  renderResults();
-  document.getElementById('results-section').scrollIntoView({behavior:'smooth', block:'start'});
-  showToast(`Match completado · ${results.length} partidas procesadas`, 'ok');
+  // Partidas solo en expediente
+  g2.forEach(p => {
+    if (!revMap[p.codigo]) {
+      matchResults.push({
+        codigo: p.codigo, descripcion: p.descripcion, unidad: p.unidad,
+        metrado: null, metrado_exp: p.metrado, diff: null, pct: null, status:'miss-rev'
+      });
+    }
+  });
+
+  // Sort by codigo
+  matchResults.sort((a,b) => a.codigo.localeCompare(b.codigo));
+
+  const ok = matchResults.filter(r=>r.status==='ok').length;
+  const diff = matchResults.filter(r=>r.status==='diff').length;
+  const mRev = matchResults.filter(r=>r.status==='miss-rev').length;
+  const mExp = matchResults.filter(r=>r.status==='miss-exp').length;
+
+  document.getElementById('st-ok').textContent = ok;
+  document.getElementById('st-diff').textContent = diff;
+  document.getElementById('st-miss-rev').textContent = mRev;
+  document.getElementById('st-miss-exp').textContent = mExp;
+
+  renderTable('all');
+  [1,2].forEach(i => {
+    document.getElementById('tab'+i).classList.add('done');
+    document.getElementById('sn'+i).textContent = '✓';
+  });
+  goStep(3);
 }
 
-// ── RENDER RESULTS ────────────────────────────────────────
-function renderResults() {
-  const counts = {ok:0, err:0, warn:0, miss:0, 'only-revit':0};
-  matchResults.forEach(r => counts[r.status] = (counts[r.status]||0) + 1);
-  const total = matchResults.length;
-  const disc = (counts.err||0) + (counts.warn||0);
-
-  document.getElementById('stats-grid').innerHTML = `
-    <div class="stat-card">
-      <div class="stat-n" style="color:var(--text)">${total}</div>
-      <div class="stat-l">Total partidas</div>
-      <div class="stat-bar" style="background:var(--border2)"></div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-n" style="color:var(--ok)">${counts.ok||0}</div>
-      <div class="stat-l">✓ Coinciden</div>
-      <div class="stat-bar" style="background:var(--ok);width:${total?Math.round((counts.ok/total)*100):0}%"></div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-n" style="color:var(--err)">${counts.err||0}</div>
-      <div class="stat-l">Valor diferente</div>
-      <div class="stat-bar" style="background:var(--err);width:${total?Math.round(((counts.err||0)/total)*100):0}%"></div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-n" style="color:var(--warn)">${counts.warn||0}</div>
-      <div class="stat-l">Nombre diferente</div>
-      <div class="stat-bar" style="background:var(--warn);width:${total?Math.round(((counts.warn||0)/total)*100):0}%"></div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-n" style="color:var(--info)">${(counts.miss||0)+(counts['only-revit']||0)}</div>
-      <div class="stat-l">Solo una fuente</div>
-      <div class="stat-bar" style="background:var(--info);width:${total?Math.round((((counts.miss||0)+(counts['only-revit']||0))/total)*100):0}%"></div>
-    </div>
-  `;
-
-  document.getElementById('results-section').style.display = 'block';
-  renderTable();
+// ─── TABLE RENDER ─────────────────────────────────────────────
+function filterTable(f, btn) {
+  currentFilter = f;
+  document.querySelectorAll('.mf-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderTable(f);
 }
 
-// ── RENDER TABLE ──────────────────────────────────────────
-function renderTable() {
-  let rows = matchResults;
-  if (currentFilter !== 'all') rows = rows.filter(r => r.status === currentFilter);
-  if (searchQuery) {
-    const q = searchQuery.toLowerCase();
-    rows = rows.filter(r => r.codigo.toLowerCase().includes(q) || r.desc.toLowerCase().includes(q) || r.expDesc.toLowerCase().includes(q));
-  }
+function renderTable(filter) {
+  const rows = filter==='all' ? matchResults : matchResults.filter(r=>r.status===filter);
+  const tbody = document.getElementById('result-tbody');
 
-  const tbody = document.getElementById('match-body');
-  if (!rows.length) {
-    tbody.innerHTML = `<tr><td colspan="7" class="empty"><div class="empty-icon">⬡</div><div class="empty-msg">Sin partidas con este filtro</div></td></tr>`;
-    return;
-  }
+  tbody.innerHTML = rows.map((r,i) => {
+    const rev = r.metrado !== null ? r.metrado.toFixed(4) : '—';
+    const exp = r.metrado_exp !== null ? r.metrado_exp.toFixed(4) : '—';
+    const diff = r.diff !== null ? (r.diff >= 0 ? '+' : '') + r.diff.toFixed(4) : '—';
+    const pct = r.pct !== null ? (r.pct >= 0 ? '+' : '') + r.pct.toFixed(2) + '%' : '—';
+    const diffCls = r.diff === null ? '' : Math.abs(r.diff) <= 0.05 ? 'diff-ok' : Math.abs(r.diff) <= 1 ? 'diff-warn' : 'diff-bad';
+    const revCls = r.metrado !== null ? 'num-ok' : '';
 
-  const badges = {
-    ok: '<span class="badge b-ok">✓ OK</span>',
-    warn: '<span class="badge b-warn">⚠ Nombre</span>',
-    err: '<span class="badge b-err">⚠ Valor</span>',
-    miss: '<span class="badge b-miss">Solo Exp.</span>',
-    'only-revit': '<span class="badge b-only">Solo Revit</span>'
-  };
+    let badge = '';
+    if (r.status==='ok') badge = '<span class="status-badge badge-ok">✓ OK</span>';
+    else if (r.status==='diff') badge = '<span class="status-badge badge-warn">⚠ Diferencia</span>';
+    else if (r.status==='miss-rev') badge = '<span class="status-badge badge-missing-exp">✗ Falta en Revit</span>';
+    else if (r.status==='miss-exp') badge = '<span class="status-badge badge-missing-rev">? No en Exp.</span>';
 
-  tbody.innerHTML = rows.map(r => {
-    const rv = r.metrado !== null ? r.metrado.toFixed(3) : '—';
-    const ev = r.expMetrado !== null ? r.expMetrado.toFixed(3) : '—';
-    const rvc = r.status === 'err' ? 'val-err' : (r.metrado === null ? 'val-na' : 'val-ok');
-    const evc = r.status === 'err' ? 'val-err' : (r.expMetrado === null ? 'val-na' : 'val-ok');
-    const diff = (r.status === 'err' && r.metrado !== null && r.expMetrado !== null)
-      ? `<span style="font-size:9px;color:var(--err);display:block;margin-top:1px;">Δ ${(r.metrado - r.expMetrado).toFixed(3)}</span>` : '';
-    const cmt = comments[r.codigo] || '';
-    return `<tr class="data-row" data-status="${r.status}">
+    return `<tr data-status="${r.status}">
+      <td style="color:var(--text3)">${i+1}</td>
       <td class="code-cell">${r.codigo}</td>
-      <td>${r.desc}</td>
-      <td class="${rvc}">${rv}${diff}</td>
-      <td style="color:var(--muted2)">${r.expDesc}</td>
-      <td class="${evc}">${ev}</td>
-      <td style="font-family:var(--mono);font-size:10px;color:var(--muted)">${r.expUnidad||r.unidad||'—'}</td>
-      <td>${badges[r.status]||''} <input class="comment-input" placeholder="comentario..." value="${cmt}" onchange="saveComment('${r.codigo}',this.value)" style="display:block;margin-top:3px;width:100%;max-width:140px;"></td>
+      <td class="desc-cell" title="${r.descripcion}">${r.descripcion.substring(0,52)}${r.descripcion.length>52?'…':''}</td>
+      <td class="und-cell">${r.unidad||'—'}</td>
+      <td class="num-cell ${revCls}">${rev}</td>
+      <td class="num-cell" style="color:var(--text2)">${exp}</td>
+      <td class="num-diff ${diffCls}">${diff}</td>
+      <td class="num-diff ${diffCls}">${pct}</td>
+      <td>${badge}</td>
     </tr>`;
   }).join('');
 }
 
-function saveComment(codigo, val) { comments[codigo] = val; }
-
-// ── FILTERS ───────────────────────────────────────────────
-function applyFilter(el) {
-  document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
-  el.classList.add('active');
-  currentFilter = el.dataset.f;
-  renderTable();
-}
-
-function applySearch(q) {
-  searchQuery = q;
-  renderTable();
-}
-
-// ── EXPORTS ───────────────────────────────────────────────
-function today() { return new Date().toISOString().slice(0,10).replace(/-/g,''); }
-
+// ─── EXPORT ───────────────────────────────────────────────────
 function exportCSV() {
-  const header = 'Codigo,Descripcion_Revit,Metrado_Revit,Descripcion_Exp,Metrado_Exp,Unidad,Estado,Diferencia,Comentario\n';
-  const rows = matchResults.map(r => {
-    const diff = (r.metrado !== null && r.expMetrado !== null) ? (r.metrado - r.expMetrado).toFixed(3) : '';
-    return `"${r.codigo}","${r.desc}",${r.metrado??''},"${r.expDesc}",${r.expMetrado??''},"${r.expUnidad||r.unidad||''}",${r.status},${diff},"${comments[r.codigo]||''}"`;
-  }).join('\n');
-  download('BRH_Match_'+today()+'.csv', '\uFEFF'+header+rows, 'text/csv');
-  showToast('CSV exportado', 'ok');
-}
-
-function exportExcel() {
-  const data = [['Codigo','Descripcion Revit','Metrado Revit','Descripcion Expediente','Metrado Exp','Unidad','Estado','Diferencia','Comentario']];
-  matchResults.forEach(r => {
-    const diff = (r.metrado !== null && r.expMetrado !== null) ? +(r.metrado - r.expMetrado).toFixed(3) : '';
-    data.push([r.codigo, r.desc, r.metrado??'', r.expDesc, r.expMetrado??'', r.expUnidad||r.unidad||'', r.status, diff, comments[r.codigo]||'']);
-  });
-  const wb = XLSX.utils.book_new();
-  const ws = XLSX.utils.aoa_to_sheet(data);
-  ws['!cols'] = [{wch:16},{wch:40},{wch:12},{wch:40},{wch:12},{wch:8},{wch:12},{wch:10},{wch:30}];
-  XLSX.utils.book_append_sheet(wb, ws, 'Match');
-  XLSX.writeFile(wb, 'BRH_Match_'+today()+'.xlsx');
-  showToast('Excel exportado', 'ok');
-}
-
-function exportTXT() {
-  const counts = {ok:0,err:0,warn:0,miss:0,'only-revit':0};
-  matchResults.forEach(r => counts[r.status] = (counts[r.status]||0)+1);
-  const disc = matchResults.filter(r => r.status !== 'ok');
-  let txt = `BRH MATCH VALIDATOR — Reporte ${new Date().toLocaleString('es-PE')}\n`;
-  txt += `Proyecto: Mejoramiento y Ampliación Servicio de Drenaje Pluvial · Sullana-Bellavista CA1\n`;
-  txt += '='.repeat(70)+'\n\n';
-  txt += `RESUMEN\n${'─'.repeat(40)}\n`;
-  txt += `Total partidas analizadas : ${matchResults.length}\n`;
-  txt += `✓ Coinciden               : ${counts.ok||0}\n`;
-  txt += `⚠ Valor diferente         : ${counts.err||0}\n`;
-  txt += `⚠ Nombre diferente        : ${counts.warn||0}\n`;
-  txt += `→ Solo en expediente      : ${counts.miss||0}\n`;
-  txt += `→ Solo en Revit           : ${counts['only-revit']||0}\n\n`;
-  if (disc.length) {
-    txt += `DISCREPANCIAS\n${'─'.repeat(40)}\n`;
-    disc.forEach(r => {
-      txt += `\n[${r.status.toUpperCase()}] ${r.codigo}\n`;
-      txt += `  Revit : ${r.desc} (${r.metrado??'—'})\n`;
-      txt += `  Exp.  : ${r.expDesc} (${r.expMetrado??'—'})\n`;
-      if (r.metrado !== null && r.expMetrado !== null) txt += `  Δ     : ${(r.metrado-r.expMetrado).toFixed(3)}\n`;
-      if (comments[r.codigo]) txt += `  Nota  : ${comments[r.codigo]}\n`;
-    });
-  }
-  txt += `\n${'='.repeat(70)}\nGenerado con BRH Match Validator · Gonzaga Arquitectos\n`;
-  download('BRH_Reporte_'+today()+'.txt', txt, 'text/plain');
-  showToast('Reporte TXT exportado', 'ok');
-}
-
-function download(name, content, type) {
+  const headers = ['codigo_de_partida','descripcion','unidad','metrado_revit','metrado_expediente','diferencia','diferencia_pct','estado'];
+  const rows = matchResults.map(r => [
+    r.codigo,
+    '"'+r.descripcion.replace(/"/g,'""')+'"',
+    r.unidad||'',
+    r.metrado !== null ? r.metrado : '',
+    r.metrado_exp !== null ? r.metrado_exp : '',
+    r.diff !== null ? r.diff.toFixed(4) : '',
+    r.pct !== null ? r.pct.toFixed(2)+'%' : '',
+    r.status
+  ].join(','));
+  const csv = [headers.join(','), ...rows].join('\n');
+  const blob = new Blob(['\uFEFF'+csv], {type:'text/csv;charset=utf-8'});
+  const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
-  a.href = URL.createObjectURL(new Blob([content], {type}));
-  a.download = name;
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-}
-
-// ── RESET ─────────────────────────────────────────────────
-function resetAll() {
-  dataRevit = []; dataExp = []; matchResults = [];
-  currentFilter = 'all'; searchQuery = '';
-  ['revit','exp'].forEach(s => {
-    setDot(s,''); setInfo(s,'Haz clic o arrastra el archivo aquí');
-    document.getElementById('card-'+s).classList.remove('loaded');
-    document.getElementById('file-'+s).value='';
-  });
-  document.getElementById('paste-revit').value='';
-  document.getElementById('paste-exp').value='';
-  document.getElementById('results-section').style.display='none';
-  document.getElementById('btn-run').disabled=true;
-  document.getElementById('col-hint').textContent='—';
-  document.getElementById('search-input').value='';
-  showToast('Datos limpiados — nueva revisión lista');
-}
-
-// ── TOAST ─────────────────────────────────────────────────
-function showToast(msg, type) {
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.className = 'toast show' + (type==='ok'?' ok-t':'');
-  clearTimeout(t._t);
-  t._t = setTimeout(() => t.classList.remove('show'), 2500);
+  a.href = url; a.download = 'BRH_Match_CA1_PV.csv'; a.click();
+  URL.revokeObjectURL(url);
 }
 </script>
 </body>
