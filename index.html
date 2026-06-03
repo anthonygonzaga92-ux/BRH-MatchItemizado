@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BRH Match Validator · CA1 Paisajismo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --bg:#0f1117;--s1:#181c27;--s2:#1e2334;--s3:#242840;
+  --border:#2a3050;--border2:#3a4060;
+  --accent:#00d4aa;--accent2:#3b82f6;--accent3:#a78bfa;
+  --ok:#10b981;--warn:#f59e0b;--err:#ef4444;--info:#3b82f6;
+  --text:#e2e8f0;--muted:#64748b;--muted2:#94a3b8;
+  --mono:'IBM Plex Mono',monospace;--sans:'IBM Plex Sans',sans-serif;
+  --radius:8px;--radius-lg:12px;
+}
+html{scroll-behavior:smooth;}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:100vh;line-height:1.5;}
+
+/* HEADER */
+.header{background:var(--s1);border-bottom:1px solid var(--border);padding:0 2rem;height:56px;display:flex;align-items:center;gap:14px;position:sticky;top:0;z-index:100;}
+.logo-box{width:34px;height:34px;background:var(--accent);border-radius:6px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.logo-box svg{width:18px;height:18px;stroke:#0a1a14;fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round;}
+.header-title{font-family:var(--mono);font-size:14px;font-weight:600;color:var(--text);}
+.header-sub{font-size:11px;color:var(--muted);font-family:var(--sans);}
+.header-tag{margin-left:auto;font-size:10px;font-family:var(--mono);background:#0d2a20;color:var(--accent);border:1px solid #1a4a32;padding:3px 10px;border-radius:3px;letter-spacing:.04em;}
+.header-ver{font-size:10px;font-family:var(--mono);color:var(--muted);margin-left:8px;}
+
+/* MAIN */
+.main{max-width:1100px;margin:0 auto;padding:2rem 1.5rem;}
+
+/* SECTION TITLE */
+.sec-title{font-family:var(--mono);font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;margin-bottom:.75rem;display:flex;align-items:center;gap:8px;}
+.sec-title::after{content:'';flex:1;height:.5px;background:var(--border);}
+
+/* UPLOAD PANEL */
+.upload-panel{background:var(--s1);border:1px solid var(--border);border-radius:var(--radius-lg);padding:1.5rem;margin-bottom:1.5rem;}
+.upload-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:1.25rem;}
+.upload-card{background:var(--s2);border:1.5px dashed var(--border2);border-radius:var(--radius);padding:1.25rem;cursor:pointer;transition:all .2s;position:relative;min-height:110px;}
+.upload-card:hover{border-color:var(--accent);background:var(--s3);}
+.upload-card.loaded{border-style:solid;border-color:var(--ok);background:#041a10;}
+.upload-card input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;}
+.uc-src{font-family:var(--mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;margin-bottom:5px;}
+.uc-name{font-size:13px;font-weight:600;color:var(--text);}
+.uc-hint{font-size:11px;color:var(--muted);margin-top:3px;}
+.uc-status{display:flex;align-items:center;gap:7px;margin-top:10px;}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--border2);transition:background .3s;}
+.dot.ok{background:var(--ok);}
+.dot.loading{background:var(--warn);animation:pulse 1s infinite;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.4;}}
+.uc-info{font-size:11px;color:var(--muted);font-family:var(--mono);}
+.uc-info.ok{color:var(--ok);}
+
+/* TABS */
+.tab-row{display:flex;gap:2px;margin-bottom:1rem;}
+.tab{font-size:11px;font-family:var(--mono);padding:5px 16px;border-radius:4px 4px 0 0;border:1px solid var(--border);border-bottom:none;background:var(--s2);color:var(--muted);cursor:pointer;transition:.15s;letter-spacing:.03em;}
+.tab:hover{color:var(--text);}
+.tab.active{background:var(--s1);color:var(--accent);border-color:var(--accent);}
+.tab-panel{display:none;}
+.tab-panel.active{display:block;}
+
+/* PASTE AREA */
+.paste-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.paste-label{font-family:var(--mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;margin-bottom:5px;}
+textarea{width:100%;background:var(--s2);border:1px solid var(--border);border-radius:var(--radius);color:var(--text);font-family:var(--mono);font-size:10.5px;padding:.75rem;resize:vertical;min-height:100px;transition:border-color .2s;}
+textarea:focus{outline:none;border-color:var(--accent);}
+textarea::placeholder{color:var(--border2);}
+.paste-hint{font-size:10px;color:var(--muted);font-family:var(--mono);margin-top:4px;}
+.paste-hint.ok{color:var(--ok);}
+
+/* FILTERS ROW */
+.config-row{display:grid;grid-template-columns:1fr auto;gap:12px;align-items:end;margin-bottom:1.25rem;}
+.config-field label{font-family:var(--mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;display:block;margin-bottom:5px;}
+.config-field input{background:var(--s2);border:1px solid var(--border);border-radius:var(--radius);color:var(--text);font-family:var(--mono);font-size:12px;padding:6px 10px;width:100%;transition:border-color .2s;}
+.config-field input:focus{outline:none;border-color:var(--accent);}
+
+/* BTN RUN */
+.btn-run{background:var(--accent);color:#0a1a14;font-family:var(--mono);font-size:13px;font-weight:600;border:none;border-radius:var(--radius);padding:.75rem 2rem;cursor:pointer;letter-spacing:.06em;transition:all .2s;width:100%;display:flex;align-items:center;justify-content:center;gap:8px;}
+.btn-run:hover:not(:disabled){opacity:.85;transform:translateY(-1px);}
+.btn-run:disabled{opacity:.3;cursor:not-allowed;transform:none;}
+.btn-run svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2.5;stroke-linecap:round;}
+
+/* STATS */
+.stats-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:1.25rem;}
+.stat-card{background:var(--s1);border:1px solid var(--border);border-radius:var(--radius);padding:.85rem 1rem;}
+.stat-n{font-size:24px;font-weight:600;font-family:var(--mono);line-height:1;}
+.stat-l{font-size:10px;color:var(--muted);font-family:var(--sans);margin-top:4px;}
+.stat-bar{height:2px;border-radius:1px;margin-top:8px;}
+
+/* FILTER CHIPS */
+.filter-bar{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:1rem;}
+.chip{font-size:11px;font-family:var(--mono);padding:4px 14px;border-radius:3px;border:1px solid var(--border);background:var(--s1);color:var(--muted);cursor:pointer;transition:.15s;letter-spacing:.03em;}
+.chip:hover{color:var(--text);border-color:var(--border2);}
+.chip.active{background:var(--s2);color:var(--text);border-color:var(--accent);}
+
+/* SEARCH */
+.search-wrap{position:relative;margin-bottom:1rem;}
+.search-wrap input{width:100%;background:var(--s1);border:1px solid var(--border);border-radius:var(--radius);color:var(--text);font-family:var(--mono);font-size:12px;padding:8px 12px 8px 36px;transition:border-color .2s;}
+.search-wrap input:focus{outline:none;border-color:var(--accent);}
+.search-icon{position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--muted);}
+
+/* TABLE */
+.tbl-wrap{border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;overflow-x:auto;}
+table{width:100%;border-collapse:collapse;table-layout:fixed;min-width:780px;}
+th{font-size:9.5px;font-family:var(--mono);color:var(--muted);text-transform:uppercase;letter-spacing:.08em;padding:9px 10px;border-bottom:1px solid var(--border);background:var(--s1);text-align:left;white-space:nowrap;}
+td{padding:7px 10px;border-bottom:.5px solid var(--border);font-family:var(--sans);vertical-align:middle;word-break:break-word;font-size:12px;color:var(--text);}
+tr:last-child td{border-bottom:none;}
+tr.data-row:hover td{background:var(--s2);transition:background .1s;}
+tr.sec-row td{background:var(--s1);font-size:9.5px;font-family:var(--mono);color:var(--muted);text-transform:uppercase;letter-spacing:.08em;padding:5px 10px;border-bottom:.5px solid var(--border);}
+col.c0{width:13%;}col.c1{width:22%;}col.c2{width:9%;}col.c3{width:22%;}col.c4{width:9%;}col.c5{width:7%;}col.c6{width:18%;}
+
+/* BADGES */
+.badge{display:inline-flex;align-items:center;gap:4px;padding:2px 9px;border-radius:3px;font-size:10px;font-weight:500;font-family:var(--mono);white-space:nowrap;}
+.b-ok{background:#041f12;color:#10b981;border:1px solid #0a3520;}
+.b-warn{background:#231a03;color:#f59e0b;border:1px solid #3d2e08;}
+.b-err{background:#1f0808;color:#ef4444;border:1px solid #3d1010;}
+.b-miss{background:#06112a;color:#3b82f6;border:1px solid #0e2050;}
+.b-only{background:#1a0e2e;color:#a78bfa;border:1px solid #301a55;}
+
+/* VALUE DISPLAY */
+.val-err{color:var(--err);font-family:var(--mono);font-size:11px;font-weight:500;}
+.val-ok{color:var(--muted2);font-family:var(--mono);font-size:11px;}
+.val-na{color:var(--border2);font-family:var(--mono);font-size:11px;}
+.code-cell{font-family:var(--mono);font-size:10.5px;color:var(--accent);}
+
+/* COMMENT INPUT */
+.comment-input{width:100%;background:transparent;border:none;color:var(--muted2);font-family:var(--sans);font-size:11px;outline:none;padding:0;}
+.comment-input:focus{color:var(--text);}
+.comment-input::placeholder{color:var(--border2);}
+
+/* EXPORT BAR */
+.export-bar{display:flex;gap:8px;margin-top:1rem;flex-wrap:wrap;}
+.btn-exp{font-size:11px;font-family:var(--mono);padding:7px 18px;border-radius:var(--radius);border:1px solid var(--border);background:var(--s1);color:var(--text);cursor:pointer;transition:.15s;display:flex;align-items:center;gap:7px;letter-spacing:.03em;}
+.btn-exp:hover{border-color:var(--accent);color:var(--accent);}
+.btn-exp svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;}
+
+/* EMPTY STATE */
+.empty{text-align:center;padding:3.5rem 1rem;}
+.empty-icon{font-size:36px;margin-bottom:.75rem;opacity:.4;}
+.empty-msg{color:var(--muted);font-family:var(--sans);font-size:13px;}
+
+/* FOOTER */
+.footer{text-align:center;padding:2rem;font-size:10px;color:var(--muted);font-family:var(--mono);border-top:1px solid var(--border);margin-top:2rem;}
+
+/* TOAST */
+.toast{position:fixed;bottom:1.5rem;right:1.5rem;background:var(--s3);border:1px solid var(--border2);border-radius:var(--radius);padding:.75rem 1.25rem;font-size:12px;font-family:var(--mono);color:var(--text);opacity:0;transform:translateY(8px);transition:all .3s;pointer-events:none;z-index:999;}
+.toast.show{opacity:1;transform:translateY(0);}
+.toast.ok-t{border-color:var(--ok);color:var(--ok);}
+
+/* RESPONSIVE */
+@media(max-width:700px){
+  .upload-grid,.paste-grid,.stats-grid,.config-row{grid-template-columns:1fr;}
+  .header-sub,.header-ver{display:none;}
+  .main{padding:1rem;}
+  .stats-grid{grid-template-columns:repeat(3,1fr);}
+}
+
+/* ANIMATION */
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
+.results-section{animation:fadeIn .3s ease;}
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div class="logo-box">
+    <svg viewBox="0 0 24 24"><path d="M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v18m0 0h10a2 2 0 0 0 2-2v-4M9 21H5a2 2 0 0 1-2-2v-4m0 0h18"/></svg>
+  </div>
+  <div>
+    <div class="header-title">BRH Match Validator</div>
+    <div class="header-sub">Validación de partidas · Revit vs Expediente</div>
+  </div>
+  <div class="header-tag">BRH · CA1 Paisajismo</div>
+  <div class="header-ver">v1.0</div>
+</header>
+
+<main class="main">
+
+  <!-- UPLOAD PANEL -->
+  <div class="upload-panel">
+    <div class="sec-title">Cargar datos</div>
+
+    <div class="tab-row">
+      <div class="tab active" onclick="switchTab('upload')" id="tab-btn-upload">Subir archivos</div>
+      <div class="tab" onclick="switchTab('paste')" id="tab-btn-paste">Pegar CSV</div>
+    </div>
+
+    <!-- TAB UPLOAD -->
+    <div class="tab-panel active" id="tab-upload">
+      <div class="upload-grid">
+        <div class="upload-card" id="card-revit">
+          <input type="file" accept=".csv,.xlsx,.xls" onchange="loadFile(this,'revit')" id="file-revit">
+          <div class="uc-src">Fuente 01 · Revit</div>
+          <div class="uc-name">BRH_Itemizado</div>
+          <div class="uc-hint">CSV o Excel exportado del Schedule de Revit</div>
+          <div class="uc-status">
+            <div class="dot" id="dot-revit"></div>
+            <span class="uc-info" id="info-revit">Haz clic o arrastra el archivo aquí</span>
+          </div>
+        </div>
+        <div class="upload-card" id="card-exp">
+          <input type="file" accept=".csv,.xlsx,.xls" onchange="loadFile(this,'exp')" id="file-exp">
+          <div class="uc-src">Fuente 02 · Expediente</div>
+          <div class="uc-name">Planilla de Metrados</div>
+          <div class="uc-hint">CSV o Excel de la planilla oficial del expediente</div>
+          <div class="uc-status">
+            <div class="dot" id="dot-exp"></div>
+            <span class="uc-info" id="info-exp">Haz clic o arrastra el archivo aquí</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB PASTE -->
+    <div class="tab-panel" id="tab-paste">
+      <div class="paste-grid">
+        <div>
+          <div class="paste-label">BRH_Itemizado (Revit)</div>
+          <textarea id="paste-revit" placeholder="CODIGO_PARTIDA,DESCRIPCION,METRADO&#10;01.01.09.02.04.04,Neltuma pallida (Algarrobo),30.000&#10;01.01.09.02.04.05,Colicodendron scabridum,3.000" oninput="parsePaste('revit')"></textarea>
+          <div class="paste-hint" id="hint-paste-revit">Formato: CODIGO, DESCRIPCION, METRADO — una fila por línea</div>
+        </div>
+        <div>
+          <div class="paste-label">Planilla Expediente</div>
+          <textarea id="paste-exp" placeholder="CODIGO_PARTIDA,DESCRIPCION,METRADO&#10;01.01.09.02.04.04,Neltuma pallida (Algarrobo),30.000&#10;01.01.09.02.04.05,Colicodendron scabridum,3.000" oninput="parsePaste('exp')"></textarea>
+          <div class="paste-hint" id="hint-paste-exp">Formato: CODIGO, DESCRIPCION, METRADO — una fila por línea</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CONFIG -->
+    <div class="config-row" style="margin-top:1rem;">
+      <div class="config-field">
+        <label>Tolerancia de valor (± diferencia permitida)</label>
+        <input type="number" id="tolerance" value="0.05" step="0.01" min="0" max="10" style="max-width:160px;">
+      </div>
+      <div style="font-size:11px;color:var(--muted);font-family:var(--mono);text-align:right;">
+        Columnas detectadas: <span id="col-hint" style="color:var(--muted2);">—</span>
+      </div>
+    </div>
+
+    <button class="btn-run" id="btn-run" onclick="runMatch()" disabled>
+      <svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+      EJECUTAR MATCH
+    </button>
+  </div>
+
+  <!-- RESULTS -->
+  <div id="results-section" style="display:none;" class="results-section">
+
+    <div class="sec-title">Resultados del match</div>
+    <div class="stats-grid" id="stats-grid"></div>
+
+    <div style="display:flex;gap:10px;align-items:center;margin-bottom:.75rem;flex-wrap:wrap;">
+      <div class="filter-bar" id="filter-bar" style="flex:1;margin-bottom:0;">
+        <div class="chip active" data-f="all" onclick="applyFilter(this)">Todos</div>
+        <div class="chip" data-f="ok" onclick="applyFilter(this)">✓ OK</div>
+        <div class="chip" data-f="err" onclick="applyFilter(this)">Valor diferente</div>
+        <div class="chip" data-f="warn" onclick="applyFilter(this)">Nombre diferente</div>
+        <div class="chip" data-f="miss" onclick="applyFilter(this)">Solo expediente</div>
+        <div class="chip" data-f="only-revit" onclick="applyFilter(this)">Solo Revit</div>
+      </div>
+    </div>
+
+    <div class="search-wrap">
+      <svg class="search-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      <input type="text" placeholder="Buscar por código o descripción..." oninput="applySearch(this.value)" id="search-input">
+    </div>
+
+    <div class="tbl-wrap">
+      <table>
+        <colgroup><col class="c0"><col class="c1"><col class="c2"><col class="c3"><col class="c4"><col class="c5"><col class="c6"></colgroup>
+        <thead>
+          <tr>
+            <th>Código</th>
+            <th>Descripción Revit</th>
+            <th>Revit</th>
+            <th>Descripción Expediente</th>
+            <th>Exp.</th>
+            <th>Unid</th>
+            <th>Estado / Comentario</th>
+          </tr>
+        </thead>
+        <tbody id="match-body"></tbody>
+      </table>
+    </div>
+
+    <div class="export-bar">
+      <button class="btn-exp" onclick="exportCSV()">
+        <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Exportar CSV
+      </button>
+      <button class="btn-exp" onclick="exportExcel()">
+        <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Exportar Excel
+      </button>
+      <button class="btn-exp" onclick="exportTXT()">
+        <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        Reporte TXT
+      </button>
+      <button class="btn-exp" onclick="resetAll()" style="margin-left:auto;color:var(--muted);">
+        <svg viewBox="0 0 24 24"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.51"/></svg>
+        Nueva revisión
+      </button>
+    </div>
+  </div>
+
+</main>
+
+<footer class="footer">
+  BRH Match Validator · Benito Roggio e Hijos S.A. · Proyecto Sullana-Bellavista CA1 · Gonzaga Arquitectos
+</footer>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── STATE ────────────────────────────────────────────────
+let dataRevit = [], dataExp = [], matchResults = [];
+let currentFilter = 'all', searchQuery = '';
+const comments = {};
+
+// ── TABS ─────────────────────────────────────────────────
+function switchTab(t) {
+  ['upload','paste'].forEach(id => {
+    document.getElementById('tab-btn-'+id).classList.toggle('active', id===t);
+    document.getElementById('tab-'+id).classList.toggle('active', id===t);
+  });
+}
+
+// ── FILE LOAD ────────────────────────────────────────────
+function loadFile(input, src) {
+  const file = input.files[0];
+  if (!file) return;
+  setDot(src, 'loading');
+  setInfo(src, 'Leyendo...');
+  const reader = new FileReader();
+  const isXLSX = file.name.match(/\.xlsx?$/i);
+  if (isXLSX) {
+    reader.onload = e => {
+      try {
+        const wb = XLSX.read(new Uint8Array(e.target.result), {type:'array'});
+        const ws = wb.Sheets[wb.SheetNames[0]];
+        const csv = XLSX.utils.sheet_to_csv(ws);
+        processData(csv, src, file.name);
+      } catch(err) { setError(src); }
+    };
+    reader.readAsArrayBuffer(file);
+  } else {
+    reader.onload = e => processData(e.target.result, src, file.name);
+    reader.readAsText(file, 'utf-8');
+  }
+}
+
+function processData(text, src, fname) {
+  const rows = parseCSV(text);
+  if (src === 'revit') {
+    dataRevit = rows;
+    document.getElementById('card-revit').classList.add('loaded');
+  } else {
+    dataExp = rows;
+    document.getElementById('card-exp').classList.add('loaded');
+  }
+  setDot(src, rows.length > 0 ? 'ok' : 'err');
+  setInfo(src, rows.length > 0 ? `✓ ${rows.length} partidas cargadas` : '⚠ No se detectaron filas válidas', rows.length > 0);
+  checkReady();
+  showToast(`${fname}: ${rows.length} partidas`, 'ok');
+}
+
+function setDot(src, state) {
+  const d = document.getElementById('dot-'+src);
+  d.className = 'dot ' + (state==='ok'?'ok':state==='loading'?'loading':'');
+}
+function setInfo(src, msg, ok) {
+  const el = document.getElementById('info-'+src);
+  el.textContent = msg;
+  el.className = 'uc-info' + (ok?' ok':'');
+}
+function setError(src) {
+  setDot(src, '');
+  setInfo(src, '⚠ Error al leer el archivo');
+}
+
+// ── PASTE PARSE ───────────────────────────────────────────
+function parsePaste(src) {
+  const text = document.getElementById('paste-'+src).value;
+  const rows = parseCSV(text);
+  if (src==='revit') dataRevit = rows;
+  else dataExp = rows;
+  const hint = document.getElementById('hint-paste-'+src);
+  if (rows.length > 0) {
+    hint.textContent = `✓ ${rows.length} partidas detectadas`;
+    hint.className = 'paste-hint ok';
+  } else {
+    hint.textContent = 'Formato: CODIGO, DESCRIPCION, METRADO';
+    hint.className = 'paste-hint';
+  }
+  checkReady();
+}
+
+// ── CSV PARSER ────────────────────────────────────────────
+function parseCSV(text) {
+  const lines = text.trim().split('\n').filter(l => l.trim());
+  if (lines.length < 2) return [];
+  const sep = lines[0].split(';').length > lines[0].split(',').length ? ';' : ',';
+  const headers = lines[0].split(sep).map(h => h.trim().replace(/"/g,'').toLowerCase()
+    .replace(/\s+/g,'_').normalize('NFD').replace(/[\u0300-\u036f]/g,''));
+  document.getElementById('col-hint').textContent = headers.join(' · ');
+  const rows = [];
+  for (let i = 1; i < lines.length; i++) {
+    const vals = splitCSVLine(lines[i], sep);
+    if (vals.length < 2) continue;
+    const obj = {};
+    headers.forEach((h, idx) => obj[h] = (vals[idx]||'').trim().replace(/^"|"$/g,''));
+    const codigo = obj['codigo_partida'] || obj['codigo_de_partida'] || obj['codigo'] || vals[0] || '';
+    const desc = obj['descripcion_partida'] || obj['descripcion_de_partida'] || obj['descripcion'] || vals[1] || '';
+    const metStr = obj['metrado'] || vals[2] || '0';
+    const metrado = parseFloat(metStr.replace(',','.').replace(/[^\d.-]/g,'')) || 0;
+    const unidad = obj['unidad'] || obj['und'] || obj['unid'] || vals[3] || '';
+    if (codigo.match(/\d{2}\.\d{2}/)) rows.push({ codigo: codigo.trim(), desc: desc.trim(), metrado, unidad });
+  }
+  return rows;
+}
+
+function splitCSVLine(line, sep) {
+  const result = []; let cur = ''; let inQ = false;
+  for (let i = 0; i < line.length; i++) {
+    const c = line[i];
+    if (c === '"') { inQ = !inQ; continue; }
+    if (c === sep && !inQ) { result.push(cur); cur = ''; continue; }
+    cur += c;
+  }
+  result.push(cur);
+  return result;
+}
+
+// ── READY CHECK ───────────────────────────────────────────
+function checkReady() {
+  document.getElementById('btn-run').disabled = !(dataRevit.length > 0 && dataExp.length > 0);
+}
+
+// ── NORMALIZATION ─────────────────────────────────────────
+function normStr(s) {
+  return s.toLowerCase()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g,'')
+    .replace(/\s+/g,' ').trim();
+}
+function numClose(a, b, tol) { return Math.abs(a - b) <= tol; }
+
+// ── MATCH ENGINE ──────────────────────────────────────────
+function runMatch() {
+  const tol = parseFloat(document.getElementById('tolerance').value) || 0.05;
+  const results = [];
+  const expMap = {};
+  dataExp.forEach(r => expMap[r.codigo.trim()] = r);
+  const seen = new Set();
+
+  dataRevit.forEach(r => {
+    seen.add(r.codigo);
+    const e = expMap[r.codigo];
+    if (!e) { results.push({...r, expDesc:'—', expMetrado:null, expUnidad:'', status:'only-revit'}); return; }
+    const nameMatch = normStr(r.desc) === normStr(e.desc);
+    const valMatch = numClose(r.metrado, e.metrado, tol);
+    let status = 'ok';
+    if (!valMatch && !nameMatch) status = 'err';
+    else if (!valMatch) status = 'err';
+    else if (!nameMatch) status = 'warn';
+    results.push({...r, expDesc:e.desc, expMetrado:e.metrado, expUnidad:e.unidad, status});
+  });
+
+  dataExp.forEach(r => {
+    if (!seen.has(r.codigo)) {
+      results.push({codigo:r.codigo, desc:'—', metrado:null, unidad:'', expDesc:r.desc, expMetrado:r.metrado, expUnidad:r.unidad, status:'miss'});
+    }
+  });
+
+  matchResults = results;
+  renderResults();
+  document.getElementById('results-section').scrollIntoView({behavior:'smooth', block:'start'});
+  showToast(`Match completado · ${results.length} partidas procesadas`, 'ok');
+}
+
+// ── RENDER RESULTS ────────────────────────────────────────
+function renderResults() {
+  const counts = {ok:0, err:0, warn:0, miss:0, 'only-revit':0};
+  matchResults.forEach(r => counts[r.status] = (counts[r.status]||0) + 1);
+  const total = matchResults.length;
+  const disc = (counts.err||0) + (counts.warn||0);
+
+  document.getElementById('stats-grid').innerHTML = `
+    <div class="stat-card">
+      <div class="stat-n" style="color:var(--text)">${total}</div>
+      <div class="stat-l">Total partidas</div>
+      <div class="stat-bar" style="background:var(--border2)"></div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-n" style="color:var(--ok)">${counts.ok||0}</div>
+      <div class="stat-l">✓ Coinciden</div>
+      <div class="stat-bar" style="background:var(--ok);width:${total?Math.round((counts.ok/total)*100):0}%"></div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-n" style="color:var(--err)">${counts.err||0}</div>
+      <div class="stat-l">Valor diferente</div>
+      <div class="stat-bar" style="background:var(--err);width:${total?Math.round(((counts.err||0)/total)*100):0}%"></div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-n" style="color:var(--warn)">${counts.warn||0}</div>
+      <div class="stat-l">Nombre diferente</div>
+      <div class="stat-bar" style="background:var(--warn);width:${total?Math.round(((counts.warn||0)/total)*100):0}%"></div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-n" style="color:var(--info)">${(counts.miss||0)+(counts['only-revit']||0)}</div>
+      <div class="stat-l">Solo una fuente</div>
+      <div class="stat-bar" style="background:var(--info);width:${total?Math.round((((counts.miss||0)+(counts['only-revit']||0))/total)*100):0}%"></div>
+    </div>
+  `;
+
+  document.getElementById('results-section').style.display = 'block';
+  renderTable();
+}
+
+// ── RENDER TABLE ──────────────────────────────────────────
+function renderTable() {
+  let rows = matchResults;
+  if (currentFilter !== 'all') rows = rows.filter(r => r.status === currentFilter);
+  if (searchQuery) {
+    const q = searchQuery.toLowerCase();
+    rows = rows.filter(r => r.codigo.toLowerCase().includes(q) || r.desc.toLowerCase().includes(q) || r.expDesc.toLowerCase().includes(q));
+  }
+
+  const tbody = document.getElementById('match-body');
+  if (!rows.length) {
+    tbody.innerHTML = `<tr><td colspan="7" class="empty"><div class="empty-icon">⬡</div><div class="empty-msg">Sin partidas con este filtro</div></td></tr>`;
+    return;
+  }
+
+  const badges = {
+    ok: '<span class="badge b-ok">✓ OK</span>',
+    warn: '<span class="badge b-warn">⚠ Nombre</span>',
+    err: '<span class="badge b-err">⚠ Valor</span>',
+    miss: '<span class="badge b-miss">Solo Exp.</span>',
+    'only-revit': '<span class="badge b-only">Solo Revit</span>'
+  };
+
+  tbody.innerHTML = rows.map(r => {
+    const rv = r.metrado !== null ? r.metrado.toFixed(3) : '—';
+    const ev = r.expMetrado !== null ? r.expMetrado.toFixed(3) : '—';
+    const rvc = r.status === 'err' ? 'val-err' : (r.metrado === null ? 'val-na' : 'val-ok');
+    const evc = r.status === 'err' ? 'val-err' : (r.expMetrado === null ? 'val-na' : 'val-ok');
+    const diff = (r.status === 'err' && r.metrado !== null && r.expMetrado !== null)
+      ? `<span style="font-size:9px;color:var(--err);display:block;margin-top:1px;">Δ ${(r.metrado - r.expMetrado).toFixed(3)}</span>` : '';
+    const cmt = comments[r.codigo] || '';
+    return `<tr class="data-row" data-status="${r.status}">
+      <td class="code-cell">${r.codigo}</td>
+      <td>${r.desc}</td>
+      <td class="${rvc}">${rv}${diff}</td>
+      <td style="color:var(--muted2)">${r.expDesc}</td>
+      <td class="${evc}">${ev}</td>
+      <td style="font-family:var(--mono);font-size:10px;color:var(--muted)">${r.expUnidad||r.unidad||'—'}</td>
+      <td>${badges[r.status]||''} <input class="comment-input" placeholder="comentario..." value="${cmt}" onchange="saveComment('${r.codigo}',this.value)" style="display:block;margin-top:3px;width:100%;max-width:140px;"></td>
+    </tr>`;
+  }).join('');
+}
+
+function saveComment(codigo, val) { comments[codigo] = val; }
+
+// ── FILTERS ───────────────────────────────────────────────
+function applyFilter(el) {
+  document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  currentFilter = el.dataset.f;
+  renderTable();
+}
+
+function applySearch(q) {
+  searchQuery = q;
+  renderTable();
+}
+
+// ── EXPORTS ───────────────────────────────────────────────
+function today() { return new Date().toISOString().slice(0,10).replace(/-/g,''); }
+
+function exportCSV() {
+  const header = 'Codigo,Descripcion_Revit,Metrado_Revit,Descripcion_Exp,Metrado_Exp,Unidad,Estado,Diferencia,Comentario\n';
+  const rows = matchResults.map(r => {
+    const diff = (r.metrado !== null && r.expMetrado !== null) ? (r.metrado - r.expMetrado).toFixed(3) : '';
+    return `"${r.codigo}","${r.desc}",${r.metrado??''},"${r.expDesc}",${r.expMetrado??''},"${r.expUnidad||r.unidad||''}",${r.status},${diff},"${comments[r.codigo]||''}"`;
+  }).join('\n');
+  download('BRH_Match_'+today()+'.csv', '\uFEFF'+header+rows, 'text/csv');
+  showToast('CSV exportado', 'ok');
+}
+
+function exportExcel() {
+  const data = [['Codigo','Descripcion Revit','Metrado Revit','Descripcion Expediente','Metrado Exp','Unidad','Estado','Diferencia','Comentario']];
+  matchResults.forEach(r => {
+    const diff = (r.metrado !== null && r.expMetrado !== null) ? +(r.metrado - r.expMetrado).toFixed(3) : '';
+    data.push([r.codigo, r.desc, r.metrado??'', r.expDesc, r.expMetrado??'', r.expUnidad||r.unidad||'', r.status, diff, comments[r.codigo]||'']);
+  });
+  const wb = XLSX.utils.book_new();
+  const ws = XLSX.utils.aoa_to_sheet(data);
+  ws['!cols'] = [{wch:16},{wch:40},{wch:12},{wch:40},{wch:12},{wch:8},{wch:12},{wch:10},{wch:30}];
+  XLSX.utils.book_append_sheet(wb, ws, 'Match');
+  XLSX.writeFile(wb, 'BRH_Match_'+today()+'.xlsx');
+  showToast('Excel exportado', 'ok');
+}
+
+function exportTXT() {
+  const counts = {ok:0,err:0,warn:0,miss:0,'only-revit':0};
+  matchResults.forEach(r => counts[r.status] = (counts[r.status]||0)+1);
+  const disc = matchResults.filter(r => r.status !== 'ok');
+  let txt = `BRH MATCH VALIDATOR — Reporte ${new Date().toLocaleString('es-PE')}\n`;
+  txt += `Proyecto: Mejoramiento y Ampliación Servicio de Drenaje Pluvial · Sullana-Bellavista CA1\n`;
+  txt += '='.repeat(70)+'\n\n';
+  txt += `RESUMEN\n${'─'.repeat(40)}\n`;
+  txt += `Total partidas analizadas : ${matchResults.length}\n`;
+  txt += `✓ Coinciden               : ${counts.ok||0}\n`;
+  txt += `⚠ Valor diferente         : ${counts.err||0}\n`;
+  txt += `⚠ Nombre diferente        : ${counts.warn||0}\n`;
+  txt += `→ Solo en expediente      : ${counts.miss||0}\n`;
+  txt += `→ Solo en Revit           : ${counts['only-revit']||0}\n\n`;
+  if (disc.length) {
+    txt += `DISCREPANCIAS\n${'─'.repeat(40)}\n`;
+    disc.forEach(r => {
+      txt += `\n[${r.status.toUpperCase()}] ${r.codigo}\n`;
+      txt += `  Revit : ${r.desc} (${r.metrado??'—'})\n`;
+      txt += `  Exp.  : ${r.expDesc} (${r.expMetrado??'—'})\n`;
+      if (r.metrado !== null && r.expMetrado !== null) txt += `  Δ     : ${(r.metrado-r.expMetrado).toFixed(3)}\n`;
+      if (comments[r.codigo]) txt += `  Nota  : ${comments[r.codigo]}\n`;
+    });
+  }
+  txt += `\n${'='.repeat(70)}\nGenerado con BRH Match Validator · Gonzaga Arquitectos\n`;
+  download('BRH_Reporte_'+today()+'.txt', txt, 'text/plain');
+  showToast('Reporte TXT exportado', 'ok');
+}
+
+function download(name, content, type) {
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([content], {type}));
+  a.download = name;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+}
+
+// ── RESET ─────────────────────────────────────────────────
+function resetAll() {
+  dataRevit = []; dataExp = []; matchResults = [];
+  currentFilter = 'all'; searchQuery = '';
+  ['revit','exp'].forEach(s => {
+    setDot(s,''); setInfo(s,'Haz clic o arrastra el archivo aquí');
+    document.getElementById('card-'+s).classList.remove('loaded');
+    document.getElementById('file-'+s).value='';
+  });
+  document.getElementById('paste-revit').value='';
+  document.getElementById('paste-exp').value='';
+  document.getElementById('results-section').style.display='none';
+  document.getElementById('btn-run').disabled=true;
+  document.getElementById('col-hint').textContent='—';
+  document.getElementById('search-input').value='';
+  showToast('Datos limpiados — nueva revisión lista');
+}
+
+// ── TOAST ─────────────────────────────────────────────────
+function showToast(msg, type) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show' + (type==='ok'?' ok-t':'');
+  clearTimeout(t._t);
+  t._t = setTimeout(() => t.classList.remove('show'), 2500);
+}
+</script>
+</body>
+</html>
