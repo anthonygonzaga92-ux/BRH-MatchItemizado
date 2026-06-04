@@ -390,6 +390,174 @@ footer span { color: var(--text2); }
 
 .und-cell { font-size: 10px; color: var(--text2); }
 
+/* EXCLUSION PANEL */
+.excl-panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  margin-bottom: 20px;
+  overflow: hidden;
+}
+.excl-header {
+  padding: 12px 16px;
+  display: flex; align-items: center; gap: 10px;
+  background: var(--surface2);
+  cursor: pointer;
+  user-select: none;
+  border-bottom: 1px solid var(--border);
+}
+.excl-header:hover { background: rgba(0,232,122,0.04); }
+.excl-title { font-size: 11px; color: var(--text); font-weight: 600; flex: 1; }
+.excl-badge {
+  font-size: 9px; padding: 2px 8px; border-radius: 10px;
+  background: var(--amber-muted); color: var(--amber);
+  border: 1px solid rgba(245,166,35,0.2);
+}
+.excl-badge.empty { background: var(--green-muted); color: var(--green); border-color: rgba(0,232,122,0.2); }
+.excl-chevron { color: var(--text3); transition: transform 0.2s; font-size: 11px; }
+.excl-chevron.open { transform: rotate(180deg); }
+.excl-body { padding: 14px 16px; display: none; }
+.excl-body.open { display: block; }
+
+.excl-tag-list {
+  display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; min-height: 32px;
+}
+.excl-tag {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 4px 10px; border-radius: 4px;
+  background: var(--amber-muted); border: 1px solid rgba(245,166,35,0.3);
+  font-size: 10px; color: var(--amber); font-family: var(--mono);
+}
+.excl-tag button {
+  background: transparent; border: none; color: var(--amber);
+  cursor: pointer; font-size: 12px; padding: 0; line-height: 1;
+  opacity: 0.6; transition: opacity 0.15s;
+}
+.excl-tag button:hover { opacity: 1; }
+.excl-empty-msg { font-size: 10px; color: var(--text3); font-style: italic; line-height: 32px; }
+
+.excl-input-row {
+  display: flex; gap: 8px; align-items: center;
+}
+.excl-input {
+  flex: 1; background: var(--surface2); border: 1px solid var(--border2);
+  border-radius: 5px; color: var(--text); font-family: var(--mono);
+  font-size: 11px; padding: 7px 10px; outline: none;
+}
+.excl-input:focus { border-color: var(--amber); }
+.excl-input::placeholder { color: var(--text3); }
+.excl-add-btn {
+  padding: 7px 14px; background: var(--amber-muted);
+  border: 1px solid rgba(245,166,35,0.3); border-radius: 5px;
+  color: var(--amber); font-family: var(--mono); font-size: 11px;
+  cursor: pointer; transition: all 0.15s; white-space: nowrap;
+}
+.excl-add-btn:hover { background: rgba(245,166,35,0.2); border-color: var(--amber); }
+.excl-hint { font-size: 9px; color: var(--text3); margin-top: 8px; line-height: 1.6; }
+
+/* GROUP TOGGLE ROWS */
+.group-row {
+  background: var(--surface2);
+  cursor: pointer;
+  user-select: none;
+  border-bottom: 1px solid var(--border) !important;
+}
+.group-row:hover { background: rgba(0,232,122,0.05) !important; }
+.group-row td {
+  padding: 8px 14px !important;
+}
+.group-label {
+  font-size: 10px; font-weight: 700; letter-spacing: 0.06em;
+  text-transform: uppercase; color: var(--text2);
+  display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+}
+.group-chevron { font-size: 9px; transition: transform 0.2s; display: inline-block; color: var(--text3); }
+.group-chevron.collapsed { transform: rotate(-90deg); }
+.group-name {
+  color: var(--text);
+  font-family: var(--display);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0;
+  text-transform: none;
+}
+.group-code { color: var(--text3); font-family: var(--mono); font-size: 10px; }
+.group-count {
+  font-size: 9px; padding: 1px 7px; border-radius: 8px;
+  background: var(--border); color: var(--text2);
+}
+.group-count.has-issues { background: var(--amber-muted); color: var(--amber); }
+.data-row { transition: opacity 0.15s; }
+.data-row.hidden { display: none; }
+
+/* TABLE SCROLL */
+.table-outer {
+  position: relative;
+}
+.table-wrap {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow-x: auto;
+  overflow-y: visible;
+}
+.table-wrap table {
+  min-width: 900px;
+}
+.table-scroll-bar {
+  margin-top: 6px;
+  height: 8px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  overflow: hidden;
+  cursor: pointer;
+}
+.table-scroll-thumb {
+  height: 100%;
+  background: var(--border2);
+  border-radius: 4px;
+  transition: background 0.15s;
+  cursor: grab;
+}
+.table-scroll-thumb:hover { background: var(--green); }
+
+/* SEARCH/FILTER BAR */
+.group-search-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 14px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 14px;
+}
+.group-search-icon { color: var(--text3); font-size: 13px; flex-shrink: 0; }
+.group-search-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: var(--text);
+  font-family: var(--mono);
+  font-size: 12px;
+}
+.group-search-input::placeholder { color: var(--text3); }
+.group-search-tags { display: flex; flex-wrap: wrap; gap: 5px; }
+.group-search-tag {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 2px 8px; border-radius: 3px;
+  background: var(--red-muted); border: 1px solid rgba(255,77,77,0.2);
+  font-size: 9px; color: var(--red); font-family: var(--mono);
+}
+.group-search-tag button {
+  background: transparent; border: none; color: var(--red);
+  cursor: pointer; font-size: 11px; padding: 0; line-height: 1; opacity: 0.7;
+}
+.group-search-tag button:hover { opacity: 1; }
+.group-search-hint { font-size: 9px; color: var(--text3); white-space: nowrap; }
+
 /* TOAST */
 .toast {
   position: fixed; bottom: 24px; right: 24px;
@@ -541,6 +709,44 @@ footer span { color: var(--text2); }
       </div>
     </div>
 
+    <!-- PANEL EXCLUSIONES -->
+    <div class="excl-panel">
+      <div class="excl-header" onclick="toggleExclPanel()">
+        <span style="font-size:14px">🚫</span>
+        <span class="excl-title">Exclusiones — Grupos de partidas a ignorar</span>
+        <span class="excl-badge empty" id="excl-badge">Sin exclusiones</span>
+        <span class="excl-chevron" id="excl-chevron">▼</span>
+      </div>
+      <div class="excl-body" id="excl-body">
+        <div style="font-size:11px; color:var(--text2); margin-bottom:12px; line-height:1.7;">
+          Agrega prefijos de partida que quieras <strong style="color:var(--amber)">excluir del match</strong>. 
+          Todas las partidas cuyo código empiece con ese prefijo serán ignoradas en ambas fuentes.
+          <br>Ejemplo: <code style="color:var(--amber); background:var(--amber-muted); padding:1px 6px; border-radius:3px">01.02.12.01.01</code> excluye todo Movimiento de Tierras.
+        </div>
+
+        <!-- Tags de exclusiones activas -->
+        <div class="excl-tag-list" id="excl-tag-list">
+          <span class="excl-empty-msg">No hay exclusiones activas. Agrega prefijos abajo.</span>
+        </div>
+
+        <!-- Input + botón agregar -->
+        <div class="excl-input-row">
+          <input class="excl-input" id="excl-input" type="text"
+            placeholder="Ej: 01.02.12.01.01  ó  01.02.12.01.02"
+            onkeydown="if(event.key==='Enter') addExclusion()">
+          <button class="excl-add-btn" onclick="addExclusion()">+ Agregar</button>
+          <button class="excl-add-btn" onclick="addExclusionsFromData()" style="background:var(--surface2); border-color:var(--border2); color:var(--text2);"
+            title="Detecta automáticamente los grupos de nivel 5 de las partidas cargadas">
+            ⚡ Auto-detectar grupos
+          </button>
+        </div>
+        <div class="excl-hint">
+          Puedes usar prefijos de cualquier nivel: <code style="color:var(--text2)">01.02</code> excluye toda una sección · <code style="color:var(--text2)">01.02.12.01.01</code> excluye un grupo específico<br>
+          Las partidas excluidas no aparecen en la tabla de resultados ni cuentan en las estadísticas.
+        </div>
+      </div>
+    </div>
+
     <button class="run-btn" onclick="runMatch()">
       ⚡ EJECUTAR MATCH
     </button>
@@ -574,25 +780,45 @@ footer span { color: var(--text2); }
       <button class="mf-btn" onclick="filterTable('diff',this)">⚠ Diferencia</button>
       <button class="mf-btn" onclick="filterTable('miss-rev',this)">✗ Falta en Revit</button>
       <button class="mf-btn" onclick="filterTable('miss-exp',this)">? No en Expediente</button>
+      <div style="margin-left:auto; display:flex; gap:6px;">
+        <button class="mf-btn" onclick="toggleAllGroups(false)" title="Expandir todos los grupos">⊞ Expandir todo</button>
+        <button class="mf-btn" onclick="toggleAllGroups(true)"  title="Colapsar todos los grupos">⊟ Colapsar todo</button>
+      </div>
     </div>
 
-    <div class="table-wrap">
-      <table>
-        <thead>
-          <tr>
-            <th>#</th>
-            <th>Código de partida</th>
-            <th>Descripción</th>
-            <th>Und</th>
-            <th style="text-align:right">Revit</th>
-            <th style="text-align:right">Expediente</th>
-            <th style="text-align:right">Δ Dif.</th>
-            <th style="text-align:right">Δ %</th>
-            <th>Estado</th>
-          </tr>
-        </thead>
-        <tbody id="result-tbody"></tbody>
-      </table>
+    <!-- SEARCH BAR EXCLUSIÓN POR NOMBRE -->
+    <div class="group-search-wrap">
+      <span class="group-search-icon">🔍</span>
+      <input class="group-search-input" id="group-search-input" type="text"
+        placeholder="Escribe el nombre de una agrupación para excluirla del match (ej: MOVIMIENTO DE TIERRAS)…"
+        onkeydown="if(event.key==='Enter') addGroupSearchExcl()">
+      <div class="group-search-tags" id="group-search-tags"></div>
+      <button class="excl-add-btn" onclick="addGroupSearchExcl()" style="padding:5px 12px; font-size:10px;">⊘ Excluir</button>
+      <span class="group-search-hint">Enter para agregar</span>
+    </div>
+
+    <div class="table-outer">
+      <div class="table-wrap" id="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Código de partida</th>
+              <th>Descripción</th>
+              <th>Und</th>
+              <th style="text-align:right">Revit</th>
+              <th style="text-align:right">Expediente</th>
+              <th style="text-align:right">Δ Dif.</th>
+              <th style="text-align:right">Δ %</th>
+              <th>Estado</th>
+            </tr>
+          </thead>
+          <tbody id="result-tbody"></tbody>
+        </table>
+      </div>
+      <div class="table-scroll-bar" id="scroll-bar" onclick="handleScrollBarClick(event)">
+        <div class="table-scroll-thumb" id="scroll-thumb"></div>
+      </div>
     </div>
 
     <div class="export-row">
@@ -904,18 +1130,123 @@ function fillConfPreview() {
   ).join('');
 }
 
+// ─── EXCLUSIONES ──────────────────────────────────────────────
+let exclusions = []; // array de prefijos string
+
+function toggleExclPanel() {
+  const body    = document.getElementById('excl-body');
+  const chevron = document.getElementById('excl-chevron');
+  const isOpen  = body.classList.toggle('open');
+  chevron.classList.toggle('open', isOpen);
+}
+
+function renderExclTags() {
+  const list  = document.getElementById('excl-tag-list');
+  const badge = document.getElementById('excl-badge');
+
+  if (exclusions.length === 0) {
+    list.innerHTML = '<span class="excl-empty-msg">No hay exclusiones activas. Agrega prefijos abajo.</span>';
+    badge.textContent = 'Sin exclusiones';
+    badge.className = 'excl-badge empty';
+  } else {
+    list.innerHTML = exclusions.map((ex, i) => `
+      <span class="excl-tag">
+        🚫 ${ex}
+        <button onclick="removeExclusion(${i})" title="Quitar exclusión">✕</button>
+      </span>
+    `).join('');
+    badge.textContent = `${exclusions.length} grupo${exclusions.length>1?'s':''} excluido${exclusions.length>1?'s':''}`;
+    badge.className = 'excl-badge';
+  }
+}
+
+function addExclusion() {
+  const input = document.getElementById('excl-input');
+  const val   = input.value.trim();
+  if (!val) return;
+  if (!/^\d{2}/.test(val)) { showToast('⚠ El prefijo debe comenzar con números (ej: 01.02.12.01.01)'); return; }
+  if (exclusions.includes(val)) { showToast('⚠ Ese prefijo ya está en la lista'); input.value=''; return; }
+  exclusions.push(val);
+  input.value = '';
+  renderExclTags();
+  showToast(`✓ Exclusión añadida: ${val}`);
+}
+
+function removeExclusion(i) {
+  const removed = exclusions.splice(i, 1)[0];
+  renderExclTags();
+  showToast(`✓ Exclusión eliminada: ${removed}`);
+}
+
+function addExclusionsFromData() {
+  // Auto-detecta grupos de nivel 5 (NN.NN.NN.NN.NN) de las partidas cargadas
+  const all = [...g1, ...g2];
+  const groups = new Set();
+  all.forEach(p => {
+    const parts = p.codigo.split('.');
+    if (parts.length >= 5) groups.add(parts.slice(0,5).join('.'));
+    else if (parts.length === 4) groups.add(parts.join('.'));
+  });
+  const newOnes = [...groups].filter(g => !exclusions.includes(g)).sort();
+  if (newOnes.length === 0) { showToast('No hay grupos nuevos para añadir'); return; }
+
+  // Muestra un selector modal inline
+  const list = document.getElementById('excl-tag-list');
+  list.innerHTML = `
+    <div style="width:100%; background:var(--surface2); border:1px solid var(--border2); border-radius:6px; padding:10px; margin-bottom:4px;">
+      <div style="font-size:10px; color:var(--text2); margin-bottom:8px; font-weight:600;">Selecciona los grupos a excluir:</div>
+      <div style="display:flex; flex-wrap:wrap; gap:6px; max-height:160px; overflow-y:auto;">
+        ${newOnes.map(g => `
+          <label style="display:flex;align-items:center;gap:5px;cursor:pointer;padding:3px 8px;
+            background:var(--amber-muted);border:1px solid rgba(245,166,35,0.2);border-radius:4px;
+            font-size:10px;color:var(--amber);font-family:var(--mono)">
+            <input type="checkbox" data-grp="${g}" style="accent-color:var(--amber)"> ${g}
+          </label>
+        `).join('')}
+      </div>
+      <div style="display:flex;gap:8px;margin-top:10px;">
+        <button onclick="confirmAutoExcl()" class="excl-add-btn">✓ Añadir seleccionados</button>
+        <button onclick="renderExclTags()" class="excl-add-btn" style="background:transparent;border-color:var(--border2);color:var(--text2)">Cancelar</button>
+      </div>
+    </div>
+  `;
+}
+
+function confirmAutoExcl() {
+  const checks = document.querySelectorAll('#excl-tag-list input[data-grp]:checked');
+  checks.forEach(cb => {
+    const val = cb.dataset.grp;
+    if (!exclusions.includes(val)) exclusions.push(val);
+  });
+  exclusions.sort();
+  renderExclTags();
+  showToast(`✓ ${checks.length} exclusion${checks.length>1?'es':''} añadida${checks.length>1?'s':''}`);
+}
+
+function isExcluded(codigo) {
+  return exclusions.some(ex => codigo.startsWith(ex));
+}
+
 // ─── MATCH ENGINE ─────────────────────────────────────────────
 function runMatch() {
   const tol = parseFloat(document.getElementById('tolerance').value) || 0.05;
+
+  // Construye diccionario de nombres de grupos ANTES de filtrar
+  buildGroupNames();
+
+  // Filtra partidas excluidas antes del match
+  const g1f = g1.filter(p => !isExcluded(p.codigo));
+  const g2f = g2.filter(p => !isExcluded(p.codigo));
+
   const expMap = {};
-  g2.forEach(p => expMap[p.codigo] = p);
+  g2f.forEach(p => expMap[p.codigo] = p);
   const revMap = {};
-  g1.forEach(p => revMap[p.codigo] = p);
+  g1f.forEach(p => revMap[p.codigo] = p);
 
   matchResults = [];
 
   // Partidas en Revit → busca en expediente
-  g1.forEach(p => {
+  g1f.forEach(p => {
     const exp = expMap[p.codigo];
     if (!exp) {
       matchResults.push({...p, metrado_exp: null, diff: null, pct: null, status:'miss-exp'});
@@ -927,8 +1258,8 @@ function runMatch() {
     }
   });
 
-  // Partidas solo en expediente (no modeladas en Revit)
-  g2.forEach(p => {
+  // Partidas solo en expediente
+  g2f.forEach(p => {
     if (!revMap[p.codigo]) {
       matchResults.push({
         codigo: p.codigo, descripcion: p.descripcion, unidad: p.unidad,
@@ -937,28 +1268,120 @@ function runMatch() {
     }
   });
 
-  // Ordenar por código
   matchResults.sort((a,b) => a.codigo.localeCompare(b.codigo));
 
-  const ok      = matchResults.filter(r=>r.status==='ok').length;
-  const diff    = matchResults.filter(r=>r.status==='diff').length;
-  const mRev    = matchResults.filter(r=>r.status==='miss-rev').length;
-  const mExp    = matchResults.filter(r=>r.status==='miss-exp').length;
+  const ok   = matchResults.filter(r=>r.status==='ok').length;
+  const diff = matchResults.filter(r=>r.status==='diff').length;
+  const mRev = matchResults.filter(r=>r.status==='miss-rev').length;
+  const mExp = matchResults.filter(r=>r.status==='miss-exp').length;
 
-  document.getElementById('st-ok').textContent      = ok;
-  document.getElementById('st-diff').textContent    = diff;
+  document.getElementById('st-ok').textContent       = ok;
+  document.getElementById('st-diff').textContent     = diff;
   document.getElementById('st-miss-rev').textContent = mRev;
   document.getElementById('st-miss-exp').textContent = mExp;
 
+  const excCount = (g1.length - g1f.length) + (g2.length - g2f.length);
+  if (excCount > 0) showToast(`✓ Match ejecutado · ${excCount} partidas excluidas`);
+
   renderTable('all');
 
-  // Marcar pasos 1 y 2 como completados
   [1,2].forEach(i => {
     document.getElementById('tab'+i).classList.add('done');
     document.getElementById('sn'+i).textContent = '✓';
   });
 
   goStep(3);
+}
+
+// ─── GRUPOS — helper ──────────────────────────────────────────
+function getGroup(codigo) {
+  const parts = codigo.split('.');
+  return parts.length >= 6 ? parts.slice(0,5).join('.') : parts.slice(0,4).join('.');
+}
+
+// Diccionario groupKey → nombre descriptivo (se construye al ejecutar match)
+let groupNames = {};
+
+function buildGroupNames() {
+  groupNames = {};
+  // Busca en expediente primero (suele tener filas de título sin metrado)
+  // y en las propias partidas: buscamos la descripción más corta del grupo (probablemente el título)
+  const allSrc = [...g2, ...g1];
+  const byGroup = {};
+  allSrc.forEach(p => {
+    const g = getGroup(p.codigo);
+    if (!byGroup[g]) byGroup[g] = [];
+    byGroup[g].push(p);
+  });
+  Object.keys(byGroup).forEach(g => {
+    // Toma la descripción más corta del grupo (suele ser el nombre de la agrupación)
+    const sorted = byGroup[g].slice().sort((a,b) => a.descripcion.length - b.descripcion.length);
+    groupNames[g] = sorted[0]?.descripcion || g;
+  });
+}
+
+// Estado de grupos colapsados
+let collapsedGroups = {};
+
+// Exclusiones por nombre de grupo (desde search bar)
+let groupSearchExcls = []; // array de strings (nombres o fragmentos)
+
+function addGroupSearchExcl() {
+  const input = document.getElementById('group-search-input');
+  const val   = input.value.trim().toUpperCase();
+  if (!val) return;
+  if (groupSearchExcls.includes(val)) { showToast('⚠ Ya está en la lista'); input.value=''; return; }
+  groupSearchExcls.push(val);
+  input.value = '';
+  renderGroupSearchTags();
+  // Re-renderiza la tabla aplicando el nuevo filtro
+  renderTable(currentFilter);
+  showToast(`⊘ Agrupación excluida: "${val}"`);
+}
+
+function removeGroupSearchExcl(i) {
+  const removed = groupSearchExcls.splice(i, 1)[0];
+  renderGroupSearchTags();
+  renderTable(currentFilter);
+  showToast(`✓ Exclusión eliminada: "${removed}"`);
+}
+
+function renderGroupSearchTags() {
+  const el = document.getElementById('group-search-tags');
+  el.innerHTML = groupSearchExcls.map((ex, i) => `
+    <span class="group-search-tag">
+      ⊘ ${ex}
+      <button onclick="removeGroupSearchExcl(${i})">✕</button>
+    </span>
+  `).join('');
+}
+
+function isGroupSearchExcluded(groupKey) {
+  if (!groupSearchExcls.length) return false;
+  const name = (groupNames[groupKey] || '').toUpperCase();
+  const code = groupKey.toUpperCase();
+  return groupSearchExcls.some(ex => name.includes(ex) || code.includes(ex));
+}
+
+function toggleGroup(groupKey) {
+  collapsedGroups[groupKey] = !collapsedGroups[groupKey];
+  const chevron = document.getElementById('chev-' + groupKey.replace(/\./g,'_'));
+  if (chevron) chevron.classList.toggle('collapsed', collapsedGroups[groupKey]);
+  document.querySelectorAll(`.data-row[data-group="${groupKey}"]`).forEach(tr => {
+    tr.classList.toggle('hidden', !!collapsedGroups[groupKey]);
+  });
+}
+
+function toggleAllGroups(collapse) {
+  const keys = [...new Set(matchResults.map(r => getGroup(r.codigo)))];
+  keys.forEach(k => {
+    collapsedGroups[k] = collapse;
+    const chevron = document.getElementById('chev-' + k.replace(/\./g,'_'));
+    if (chevron) chevron.classList.toggle('collapsed', collapse);
+    document.querySelectorAll(`.data-row[data-group="${k}"]`).forEach(tr => {
+      tr.classList.toggle('hidden', collapse);
+    });
+  });
 }
 
 // ─── TABLE RENDER ─────────────────────────────────────────────
@@ -970,44 +1393,140 @@ function filterTable(f, btn) {
 }
 
 function renderTable(filter) {
-  const rows = filter === 'all' ? matchResults : matchResults.filter(r => r.status === filter);
+  // Aplica filtro de estado + exclusiones por nombre de grupo
+  let rows = filter === 'all' ? matchResults : matchResults.filter(r => r.status === filter);
+  // Excluye grupos filtrados por la search bar
+  if (groupSearchExcls.length) {
+    rows = rows.filter(r => !isGroupSearchExcluded(getGroup(r.codigo)));
+  }
+
   const tbody = document.getElementById('result-tbody');
 
   if (!rows.length) {
     tbody.innerHTML = `<tr><td colspan="9" style="text-align:center; padding:28px; color:var(--text3)">Sin resultados para este filtro</td></tr>`;
+    updateScrollBar();
     return;
   }
 
-  tbody.innerHTML = rows.map((r, i) => {
-    const rev  = r.metrado     !== null ? r.metrado.toFixed(4)     : '—';
-    const exp  = r.metrado_exp !== null ? r.metrado_exp.toFixed(4) : '—';
-    const diff = r.diff        !== null ? (r.diff >= 0 ? '+' : '') + r.diff.toFixed(4) : '—';
-    const pct  = r.pct         !== null ? (r.pct  >= 0 ? '+' : '') + r.pct.toFixed(2) + '%' : '—';
+  // Agrupa por prefijo padre
+  const grouped = {};
+  const groupOrder = [];
+  rows.forEach(r => {
+    const g = getGroup(r.codigo);
+    if (!grouped[g]) { grouped[g] = []; groupOrder.push(g); }
+    grouped[g].push(r);
+  });
 
-    const diffCls = r.diff === null ? ''
-      : Math.abs(r.diff) <= 0.05 ? 'diff-ok'
-      : Math.abs(r.diff) <= 1    ? 'diff-warn'
-      : 'diff-bad';
+  let html = '';
+  let rowIdx = 0;
 
-    let badge = '';
-    if      (r.status==='ok')       badge = '<span class="status-badge badge-ok">✓ OK</span>';
-    else if (r.status==='diff')     badge = '<span class="status-badge badge-warn">⚠ Diferencia</span>';
-    else if (r.status==='miss-rev') badge = '<span class="status-badge badge-missing-exp">✗ Falta en Revit</span>';
-    else if (r.status==='miss-exp') badge = '<span class="status-badge badge-missing-rev">? No en Exp.</span>';
+  groupOrder.forEach(groupKey => {
+    const groupRows   = grouped[groupKey];
+    const issues      = groupRows.filter(r => r.status !== 'ok').length;
+    const isCollapsed = !!collapsedGroups[groupKey];
+    const chevId      = 'chev-' + groupKey.replace(/\./g,'_');
+    // Nombre descriptivo del grupo
+    const gName = groupNames[groupKey] || '';
 
-    return `<tr data-status="${r.status}">
-      <td style="color:var(--text3)">${i+1}</td>
-      <td class="code-cell">${r.codigo}</td>
-      <td class="desc-cell" title="${r.descripcion}">${r.descripcion.substring(0,52)}${r.descripcion.length>52?'…':''}</td>
-      <td class="und-cell">${r.unidad||'—'}</td>
-      <td class="num-cell ${r.metrado !== null ? 'num-ok' : ''}">${rev}</td>
-      <td class="num-cell" style="color:var(--text2)">${exp}</td>
-      <td class="num-diff ${diffCls}">${diff}</td>
-      <td class="num-diff ${diffCls}">${pct}</td>
-      <td>${badge}</td>
-    </tr>`;
-  }).join('');
+    html += `
+      <tr class="group-row" onclick="toggleGroup('${groupKey}')">
+        <td colspan="9">
+          <div class="group-label">
+            <span class="group-chevron ${isCollapsed?'collapsed':''}" id="${chevId}">▼</span>
+            <span class="group-code">${groupKey}</span>
+            ${gName ? `<span class="group-name">— ${gName.substring(0,60)}${gName.length>60?'…':''}</span>` : ''}
+            <span class="group-count ${issues>0?'has-issues':''}">${groupRows.length} partida${groupRows.length>1?'s':''}</span>
+            ${issues > 0
+              ? `<span class="group-count has-issues">⚠ ${issues} con diferencia</span>`
+              : `<span class="group-count" style="background:var(--green-muted);color:var(--green)">✓ OK</span>`}
+          </div>
+        </td>
+      </tr>`;
+
+    groupRows.forEach(r => {
+      rowIdx++;
+      const rev  = r.metrado     !== null ? r.metrado.toFixed(4)     : '—';
+      const exp  = r.metrado_exp !== null ? r.metrado_exp.toFixed(4) : '—';
+      const diff = r.diff        !== null ? (r.diff >= 0 ? '+' : '') + r.diff.toFixed(4) : '—';
+      const pct  = r.pct         !== null ? (r.pct  >= 0 ? '+' : '') + r.pct.toFixed(2) + '%' : '—';
+
+      const diffCls = r.diff === null ? ''
+        : Math.abs(r.diff) <= 0.05 ? 'diff-ok'
+        : Math.abs(r.diff) <= 1    ? 'diff-warn'
+        : 'diff-bad';
+
+      let badge = '';
+      if      (r.status==='ok')       badge = '<span class="status-badge badge-ok">✓ OK</span>';
+      else if (r.status==='diff')     badge = '<span class="status-badge badge-warn">⚠ Diferencia</span>';
+      else if (r.status==='miss-rev') badge = '<span class="status-badge badge-missing-exp">✗ Falta en Revit</span>';
+      else if (r.status==='miss-exp') badge = '<span class="status-badge badge-missing-rev">? No en Exp.</span>';
+
+      html += `<tr class="data-row ${isCollapsed?'hidden':''}" data-status="${r.status}" data-group="${groupKey}">
+        <td style="color:var(--text3); padding-left:24px">${rowIdx}</td>
+        <td class="code-cell" style="padding-left:24px">${r.codigo}</td>
+        <td class="desc-cell" title="${r.descripcion}">${r.descripcion.substring(0,52)}${r.descripcion.length>52?'…':''}</td>
+        <td class="und-cell">${r.unidad||'—'}</td>
+        <td class="num-cell ${r.metrado !== null ? 'num-ok' : ''}">${rev}</td>
+        <td class="num-cell" style="color:var(--text2)">${exp}</td>
+        <td class="num-diff ${diffCls}">${diff}</td>
+        <td class="num-diff ${diffCls}">${pct}</td>
+        <td>${badge}</td>
+      </tr>`;
+    });
+  });
+
+  tbody.innerHTML = html;
+  updateScrollBar();
 }
+
+// ─── SCROLL BAR CUSTOM ────────────────────────────────────────
+function updateScrollBar() {
+  const wrap  = document.getElementById('table-wrap');
+  const bar   = document.getElementById('scroll-bar');
+  const thumb = document.getElementById('scroll-thumb');
+  if (!wrap || !bar || !thumb) return;
+
+  const ratio = wrap.clientWidth / wrap.scrollWidth;
+  if (ratio >= 1) { bar.style.display = 'none'; return; }
+  bar.style.display = 'block';
+  thumb.style.width = Math.max(ratio * 100, 10) + '%';
+  thumb.style.marginLeft = (wrap.scrollLeft / wrap.scrollWidth * 100) + '%';
+}
+
+function handleScrollBarClick(e) {
+  const wrap = document.getElementById('table-wrap');
+  const bar  = document.getElementById('scroll-bar');
+  const rect = bar.getBoundingClientRect();
+  const pct  = (e.clientX - rect.left) / rect.width;
+  wrap.scrollLeft = pct * wrap.scrollWidth;
+  updateScrollBar();
+}
+
+// Sincroniza scroll de la tabla con el thumb
+(function initScrollSync() {
+  window.addEventListener('load', () => {
+    const wrap  = document.getElementById('table-wrap');
+    const thumb = document.getElementById('scroll-thumb');
+    if (!wrap || !thumb) return;
+    wrap.addEventListener('scroll', updateScrollBar);
+
+    // Drag en el thumb
+    let dragging = false, startX = 0, startScroll = 0;
+    thumb.addEventListener('mousedown', e => {
+      dragging = true; startX = e.clientX;
+      startScroll = wrap.scrollLeft;
+      e.preventDefault();
+    });
+    document.addEventListener('mousemove', e => {
+      if (!dragging) return;
+      const bar  = document.getElementById('scroll-bar');
+      const dx   = e.clientX - startX;
+      const ratio = wrap.scrollWidth / bar.clientWidth;
+      wrap.scrollLeft = startScroll + dx * ratio;
+    });
+    document.addEventListener('mouseup', () => { dragging = false; });
+  });
+})();
 
 // ─── EXPORT CSV ───────────────────────────────────────────────
 function exportCSV() {
