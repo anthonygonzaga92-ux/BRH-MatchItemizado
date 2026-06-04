@@ -440,24 +440,23 @@ footer span { color: var(--text2); }
           <div>
             <div class="source-label">Fuente G1 · Revit</div>
             <div class="source-name">BRH_Itemizado</div>
-            <div class="source-sub">Schedule exportado desde Revit (.xlsx)</div>
+            <div class="source-sub">Schedule exportado desde Revit (.xlsx) — múltiples archivos</div>
           </div>
           <span class="tag-rev" style="margin-left:auto">REVIT</span>
         </div>
         <div class="upload-body" id="drop1" onclick="document.getElementById('fi1').click()"
              ondragover="event.preventDefault()" ondrop="handleDrop(event,'g1')">
-          <input type="file" class="hidden-input" id="fi1" accept=".xlsx,.csv" onchange="loadFile(this,'g1')">
+          <input type="file" class="hidden-input" id="fi1" accept=".xlsx,.csv" multiple onchange="loadFile(this,'g1')">
           <div id="state1-empty">
             <div style="font-size:32px; color:var(--text3); text-align:center">⬆</div>
-            <div class="upload-text"><strong>Arrastra o haz clic para subir</strong>CSV o Excel exportado del Schedule de Revit</div>
+            <div class="upload-text"><strong>Arrastra o haz clic para subir</strong>Puedes cargar varios xlsx/csv — las partidas se acumulan</div>
           </div>
           <div id="state1-loaded" style="display:none; width:100%">
-            <div class="file-status">
-              <div class="dot pulse"></div>
-              <div class="fname" id="fname1">—</div>
-              <div class="fcount" id="fcount1">—</div>
+            <div id="filelist1" style="display:flex; flex-direction:column; gap:5px; width:100%; margin-bottom:8px;"></div>
+            <div style="display:flex; align-items:center; justify-content:space-between; width:100%;">
+              <span id="total-badge1" style="font-size:10px; color:var(--green)"></span>
+              <button onclick="event.stopPropagation(); clearSource('g1')" style="background:transparent; border:1px solid var(--border2); border-radius:5px; color:var(--text2); font-family:var(--mono); font-size:10px; padding:4px 10px; cursor:pointer; transition:all .15s;" onmouseover="this.style.borderColor='var(--red)';this.style.color='var(--red)'" onmouseout="this.style.borderColor='var(--border2)';this.style.color='var(--text2)'">✕ Limpiar todo</button>
             </div>
-            <div class="row-preview" id="prev1"></div>
           </div>
         </div>
       </div>
@@ -468,24 +467,23 @@ footer span { color: var(--text2); }
           <div>
             <div class="source-label">Fuente G2 · Expediente</div>
             <div class="source-name">Planilla de Metrados</div>
-            <div class="source-sub">Excel de la planilla oficial del expediente (.xlsx)</div>
+            <div class="source-sub">Excel de la planilla oficial del expediente (.xlsx) — múltiples archivos</div>
           </div>
           <span class="tag-exp" style="margin-left:auto">EXP</span>
         </div>
         <div class="upload-body" id="drop2" onclick="document.getElementById('fi2').click()"
              ondragover="event.preventDefault()" ondrop="handleDrop(event,'g2')">
-          <input type="file" class="hidden-input" id="fi2" accept=".xlsx,.csv" onchange="loadFile(this,'g2')">
+          <input type="file" class="hidden-input" id="fi2" accept=".xlsx,.csv" multiple onchange="loadFile(this,'g2')">
           <div id="state2-empty">
             <div style="font-size:32px; color:var(--text3); text-align:center">⬆</div>
-            <div class="upload-text"><strong>Arrastra o haz clic para subir</strong>CSV o Excel de la planilla oficial del expediente</div>
+            <div class="upload-text"><strong>Arrastra o haz clic para subir</strong>Puedes cargar varios xlsx/csv — las partidas se acumulan</div>
           </div>
           <div id="state2-loaded" style="display:none; width:100%">
-            <div class="file-status" style="background:rgba(0,232,122,0.08)">
-              <div class="dot" style="background:var(--green-dim)"></div>
-              <div class="fname" id="fname2">—</div>
-              <div class="fcount" id="fcount2">—</div>
+            <div id="filelist2" style="display:flex; flex-direction:column; gap:5px; width:100%; margin-bottom:8px;"></div>
+            <div style="display:flex; align-items:center; justify-content:space-between; width:100%;">
+              <span id="total-badge2" style="font-size:10px; color:var(--green)"></span>
+              <button onclick="event.stopPropagation(); clearSource('g2')" style="background:transparent; border:1px solid var(--border2); border-radius:5px; color:var(--text2); font-family:var(--mono); font-size:10px; padding:4px 10px; cursor:pointer; transition:all .15s;" onmouseover="this.style.borderColor='var(--red)';this.style.color='var(--red)'" onmouseout="this.style.borderColor='var(--border2)';this.style.color='var(--text2)'">✕ Limpiar todo</button>
             </div>
-            <div class="row-preview" id="prev2"></div>
           </div>
         </div>
       </div>
@@ -607,7 +605,7 @@ footer span { color: var(--text2); }
 </main>
 
 <footer>
-  BRH Match Validator · <span>Benito Roggio e Hijos S.A.</span> · Proyecto Sullana-Bellavista CA1 · <span>Gonzaga Arquitectos</span>
+  BRH Match Validator · <span>Benito Roggio e Hijos S.A.</span> · Proyecto Sullana-Bellavista CA1 · <span>Arq. Anthony Gonzaga Silupu</span>
 </footer>
 
 <div class="toast" id="toast"></div>
@@ -696,29 +694,86 @@ const EXP_DATA = [
 
 // ─── PRELOAD ──────────────────────────────────────────────────
 function preloadRevit() {
-  g1 = REVIT_DATA;
-  showLoaded('g1','BRH_Itemizado-PC.xlsx', g1.length, g1.slice(0,3));
+  g1 = [...REVIT_DATA];
+  g1_files = [{name:'BRH_Itemizado-PC.xlsx', count: REVIT_DATA.length}];
+  refreshFileList('g1');
+  checkReady();
 }
 function preloadExpediente() {
-  g2 = EXP_DATA;
-  showLoaded('g2','01_01_09_02_PARQUEVILLA_PERU-CANADA_OK_.xlsx', g2.length, g2.slice(0,3));
+  g2 = [...EXP_DATA];
+  g2_files = [{name:'01_01_09_02_PARQUEVILLA_PERU-CANADA_OK_.xlsx', count: EXP_DATA.length}];
+  refreshFileList('g2');
+  checkReady();
 }
 function preloadBoth() {
   preloadRevit();
   preloadExpediente();
 }
 
-function showLoaded(src, filename, count, preview) {
-  const n = src === 'g1' ? '1' : '2';
-  document.getElementById('state'+n+'-empty').style.display = 'none';
-  document.getElementById('state'+n+'-loaded').style.display = 'block';
-  document.getElementById('fname'+n).textContent = filename;
-  document.getElementById('fcount'+n).textContent = count + ' partidas';
-  const prev = preview.map(p =>
-    `<span style="color:var(--text3)">›</span> <span style="color:var(--green)">${p.codigo}</span> ${p.descripcion.substring(0,38)}…`
-  ).join('<br>');
-  document.getElementById('prev'+n).innerHTML = prev;
+// ─── MULTI-FILE STATE ─────────────────────────────────────────
+// Registros de archivos cargados por fuente
+let g1_files = []; // [{name, count}]
+let g2_files = []; // [{name, count}]
+
+function refreshFileList(src) {
+  const n    = src === 'g1' ? '1' : '2';
+  const arr  = src === 'g1' ? g1_files : g2_files;
+  const data = src === 'g1' ? g1 : g2;
+
+  const listEl  = document.getElementById('filelist' + n);
+  const badgeEl = document.getElementById('total-badge' + n);
+  const emptyEl = document.getElementById('state' + n + '-empty');
+  const loadEl  = document.getElementById('state' + n + '-loaded');
+
+  if (arr.length === 0) {
+    emptyEl.style.display = '';
+    loadEl.style.display  = 'none';
+    return;
+  }
+
+  emptyEl.style.display = 'none';
+  loadEl.style.display  = 'block';
+
+  listEl.innerHTML = arr.map((f, i) => `
+    <div style="display:flex; align-items:center; gap:8px; padding:6px 10px;
+                background:${src==='g1'?'var(--blue-muted)':'var(--green-muted)'};
+                border:1px solid ${src==='g1'?'rgba(77,159,255,0.2)':'rgba(0,232,122,0.2)'};
+                border-radius:5px;">
+      <div style="width:6px;height:6px;border-radius:50%;background:${src==='g1'?'var(--blue)':'var(--green)'};flex-shrink:0"></div>
+      <span style="font-size:10px;color:${src==='g1'?'var(--blue)':'var(--green)'};flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${f.name}</span>
+      <span style="font-size:9px;color:var(--text2);flex-shrink:0">${f.count} partidas</span>
+      <button onclick="event.stopPropagation(); removeFile('${src}',${i})"
+        style="background:transparent;border:none;color:var(--text3);cursor:pointer;font-size:12px;padding:0 2px;line-height:1"
+        onmouseover="this.style.color='var(--red)'" onmouseout="this.style.color='var(--text3)'">✕</button>
+    </div>
+  `).join('');
+
+  badgeEl.textContent = `Total: ${data.length} partidas en ${arr.length} archivo${arr.length>1?'s':''}`;
+}
+
+function removeFile(src, idx) {
+  // Reconstruye el array de datos excluyendo las partidas del archivo eliminado
+  if (src === 'g1') {
+    const removed = g1_files.splice(idx, 1)[0];
+    // Estrategia simple: si queda un solo archivo, lo recalculamos; si no, marcamos como "no separable"
+    // Como no guardamos partidas por archivo, si hay >1 archivo hacemos aviso
+    if (g1_files.length === 0) { g1 = []; }
+    else { showToast('⚠ Para quitar un archivo individual, usa "Limpiar todo" y recarga los demás.'); g1_files.splice(idx, 0, removed); return; }
+  } else {
+    const removed = g2_files.splice(idx, 1)[0];
+    if (g2_files.length === 0) { g2 = []; }
+    else { showToast('⚠ Para quitar un archivo individual, usa "Limpiar todo" y recarga los demás.'); g2_files.splice(idx, 0, removed); return; }
+  }
+  refreshFileList(src);
   checkReady();
+}
+
+function clearSource(src) {
+  if (src === 'g1') { g1 = []; g1_files = []; document.getElementById('fi1').value = ''; }
+  else              { g2 = []; g2_files = []; document.getElementById('fi2').value = ''; }
+  refreshFileList(src);
+  checkReady();
+  showToast('✓ Fuente ' + (src==='g1'?'G1':'G2') + ' limpiada');
 }
 
 function checkReady() {
@@ -730,19 +785,21 @@ function showToast(msg) {
   const t = document.getElementById('toast');
   t.textContent = msg;
   t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 3000);
+  setTimeout(() => t.classList.remove('show'), 3500);
 }
 
-// ─── FILE UPLOAD ──────────────────────────────────────────────
+// ─── FILE UPLOAD — MULTI ──────────────────────────────────────
 function handleDrop(ev, src) {
   ev.preventDefault();
-  const file = ev.dataTransfer.files[0];
-  if (file) parseFile(file, src);
+  const files = Array.from(ev.dataTransfer.files);
+  files.forEach(f => parseFile(f, src));
 }
 
 function loadFile(input, src) {
-  const file = input.files[0];
-  if (file) parseFile(file, src);
+  const files = Array.from(input.files);
+  files.forEach(f => parseFile(f, src));
+  // Reset input para permitir volver a cargar el mismo archivo si es necesario
+  input.value = '';
 }
 
 function parseFile(file, src) {
@@ -751,17 +808,16 @@ function parseFile(file, src) {
     try {
       const data = new Uint8Array(e.target.result);
       const wb = XLSX.read(data, {type:'array'});
+      let parsed = [];
 
       if (src === 'g1') {
         // ── G1: BRH Itemizado ─ tabla limpia, fila 0 = headers
         const ws = wb.Sheets[wb.SheetNames[0]];
         const rows = XLSX.utils.sheet_to_json(ws, {header:1});
-        const parsed = [];
         for (let i = 1; i < rows.length; i++) {
           const r = rows[i];
           if (!r[0]) continue;
           const code = String(r[0]).trim();
-          // Acepta cualquier código de partida numérico peruano: NN.NN...
           if (!/^\d{2}\.\d{2}/.test(code)) continue;
           parsed.push({
             codigo: code,
@@ -771,61 +827,58 @@ function parseFile(file, src) {
           });
         }
         if (parsed.length === 0) {
-          showToast('⚠ No se encontraron partidas en G1. Verifica el formato.');
+          showToast(`⚠ "${file.name}" sin partidas reconocibles en G1`);
           return;
         }
-        g1 = parsed;
-        showLoaded('g1', file.name, g1.length, g1.slice(0,3));
+        // Acumula — evita duplicados de código (el nuevo sobreescribe)
+        const map = {};
+        g1.forEach(p => map[p.codigo] = p);
+        parsed.forEach(p => map[p.codigo] = p);
+        g1 = Object.values(map);
+        g1_files.push({name: file.name, count: parsed.length});
+        refreshFileList('g1');
 
       } else {
         // ── G2: Expediente ─ layout complejo peruano
-        // Busca hoja R. METRADOS, si no existe usa la primera
         const sheetName = wb.SheetNames.find(n => n.trim().toUpperCase() === 'R. METRADOS')
                           || wb.SheetNames[0];
         const ws = wb.Sheets[sheetName];
         const rows = XLSX.utils.sheet_to_json(ws, {header:1});
-        const parsed = [];
 
         for (let i = 0; i < rows.length; i++) {
-          // Filtra celdas vacías/nulas de la fila
           let r = rows[i].filter(v => v !== null && v !== undefined && v !== '');
           if (!r.length) continue;
-
           let first = String(r[0]).trim();
-
-          // Quita prefijo "OK" si el expediente tiene esa columna auxiliar
-          if (first.toLowerCase() === 'ok') {
-            r = r.slice(1);
-            first = String(r[0] || '').trim();
-          }
-
-          // ✅ FIX: regex universal — acepta CUALQUIER código formato peruano NN.NN...
-          // Ya NO está hardcodeado a '01.01.09.02'
+          if (first.toLowerCase() === 'ok') { r = r.slice(1); first = String(r[0]||'').trim(); }
           if (!/^\d{2}\.\d{2}/.test(first) || first.length <= 6) continue;
-
-          // Necesita al menos 4 columnas: código, descripción, unidad, metrado
           if (r.length >= 4) {
             const m = parseFloat(String(r[3]).replace(',', '.'));
-            if (!isNaN(m)) {
-              parsed.push({
-                codigo: first,
-                descripcion: String(r[1] || '').trim(),
-                unidad: String(r[2] || '').trim(),
-                metrado: m
-              });
-            }
+            if (!isNaN(m)) parsed.push({
+              codigo: first,
+              descripcion: String(r[1]||'').trim(),
+              unidad: String(r[2]||'').trim(),
+              metrado: m
+            });
           }
         }
-
         if (parsed.length === 0) {
-          showToast('⚠ No se encontraron partidas en G2. Verifica el formato del expediente.');
+          showToast(`⚠ "${file.name}" sin partidas reconocibles en G2`);
           return;
         }
-        g2 = parsed;
-        showLoaded('g2', file.name, g2.length, g2.slice(0,3));
+        // Acumula — el nuevo sobreescribe en caso de código duplicado
+        const map = {};
+        g2.forEach(p => map[p.codigo] = p);
+        parsed.forEach(p => map[p.codigo] = p);
+        g2 = Object.values(map);
+        g2_files.push({name: file.name, count: parsed.length});
+        refreshFileList('g2');
       }
+
+      checkReady();
+      showToast(`✓ "${file.name}" — ${parsed.length} partidas cargadas`);
+
     } catch(err) {
-      showToast('❌ Error al leer el archivo: ' + err.message);
+      showToast('❌ Error al leer "' + file.name + '": ' + err.message);
     }
   };
   reader.readAsArrayBuffer(file);
