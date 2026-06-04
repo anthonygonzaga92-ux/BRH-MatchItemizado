@@ -389,6 +389,17 @@ footer span { color: var(--text2); }
 .tag-exp { background: rgba(0,232,122,0.12); color: var(--green); padding: 1px 5px; border-radius: 3px; font-size: 9px; }
 
 .und-cell { font-size: 10px; color: var(--text2); }
+
+/* TOAST */
+.toast {
+  position: fixed; bottom: 24px; right: 24px;
+  background: var(--surface2); border: 1px solid var(--green);
+  color: var(--green); font-family: var(--mono); font-size: 11px;
+  padding: 10px 18px; border-radius: 6px;
+  opacity: 0; transform: translateY(8px);
+  transition: all 0.25s; pointer-events: none; z-index: 999;
+}
+.toast.show { opacity: 1; transform: translateY(0); }
 </style>
 </head>
 <body>
@@ -434,7 +445,7 @@ footer span { color: var(--text2); }
           <span class="tag-rev" style="margin-left:auto">REVIT</span>
         </div>
         <div class="upload-body" id="drop1" onclick="document.getElementById('fi1').click()"
-             ondragover="ev.preventDefault()" ondrop="handleDrop(event,'g1')">
+             ondragover="event.preventDefault()" ondrop="handleDrop(event,'g1')">
           <input type="file" class="hidden-input" id="fi1" accept=".xlsx,.csv" onchange="loadFile(this,'g1')">
           <div id="state1-empty">
             <div style="font-size:32px; color:var(--text3); text-align:center">⬆</div>
@@ -462,7 +473,7 @@ footer span { color: var(--text2); }
           <span class="tag-exp" style="margin-left:auto">EXP</span>
         </div>
         <div class="upload-body" id="drop2" onclick="document.getElementById('fi2').click()"
-             ondragover="ev.preventDefault()" ondrop="handleDrop(event,'g2')">
+             ondragover="event.preventDefault()" ondrop="handleDrop(event,'g2')">
           <input type="file" class="hidden-input" id="fi2" accept=".xlsx,.csv" onchange="loadFile(this,'g2')">
           <div id="state2-empty">
             <div style="font-size:32px; color:var(--text3); text-align:center">⬆</div>
@@ -599,6 +610,8 @@ footer span { color: var(--text2); }
   BRH Match Validator · <span>Benito Roggio e Hijos S.A.</span> · Proyecto Sullana-Bellavista CA1 · <span>Gonzaga Arquitectos</span>
 </footer>
 
+<div class="toast" id="toast"></div>
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script>
 // ─── DATA STORE ───────────────────────────────────────────────
@@ -712,7 +725,15 @@ function checkReady() {
   document.getElementById('btn-next1').disabled = !(g1.length > 0 && g2.length > 0);
 }
 
-// ─── FILE UPLOAD (real xlsx parsing) ─────────────────────────
+// ─── TOAST ────────────────────────────────────────────────────
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+// ─── FILE UPLOAD ──────────────────────────────────────────────
 function handleDrop(ev, src) {
   ev.preventDefault();
   const file = ev.dataTransfer.files[0];
@@ -727,50 +748,84 @@ function loadFile(input, src) {
 function parseFile(file, src) {
   const reader = new FileReader();
   reader.onload = function(e) {
-    const data = new Uint8Array(e.target.result);
-    const wb = XLSX.read(data, {type:'array'});
+    try {
+      const data = new Uint8Array(e.target.result);
+      const wb = XLSX.read(data, {type:'array'});
 
-    if (src === 'g1') {
-      // BRH Itemizado: clean table, row 0 = headers
-      const ws = wb.Sheets[wb.SheetNames[0]];
-      const rows = XLSX.utils.sheet_to_json(ws, {header:1});
-      const parsed = [];
-      for (let i = 1; i < rows.length; i++) {
-        const r = rows[i];
-        if (!r[0] || !String(r[0]).startsWith('01.')) continue;
-        parsed.push({
-          codigo: String(r[0]).trim(),
-          descripcion: String(r[1]||'').trim(),
-          unidad: String(r[2]||'').trim(),
-          metrado: parseFloat(r[3])||0
-        });
-      }
-      g1 = parsed;
-      showLoaded('g1', file.name, g1.length, g1.slice(0,3));
-    } else {
-      // Expediente: complex layout, use R. METRADOS sheet
-      const sheetName = wb.SheetNames.includes('R. METRADOS') ? 'R. METRADOS' : wb.SheetNames[0];
-      const ws = wb.Sheets[sheetName];
-      const rows = XLSX.utils.sheet_to_json(ws, {header:1});
-      const parsed = [];
-      for (let i = 0; i < rows.length; i++) {
-        let r = rows[i].filter(v => v !== null && v !== undefined && v !== '');
-        if (!r.length) continue;
-        let first = String(r[0]).trim();
-        if (first.toLowerCase() === 'ok') { r = r.slice(1); first = String(r[0]||'').trim(); }
-        if (!first.startsWith('01.01.09.02') || first.length <= 14) continue;
-        if (r.length >= 4) {
-          const m = parseFloat(r[3]);
-          if (!isNaN(m)) parsed.push({
-            codigo: first,
+      if (src === 'g1') {
+        // ── G1: BRH Itemizado ─ tabla limpia, fila 0 = headers
+        const ws = wb.Sheets[wb.SheetNames[0]];
+        const rows = XLSX.utils.sheet_to_json(ws, {header:1});
+        const parsed = [];
+        for (let i = 1; i < rows.length; i++) {
+          const r = rows[i];
+          if (!r[0]) continue;
+          const code = String(r[0]).trim();
+          // Acepta cualquier código de partida numérico peruano: NN.NN...
+          if (!/^\d{2}\.\d{2}/.test(code)) continue;
+          parsed.push({
+            codigo: code,
             descripcion: String(r[1]||'').trim(),
             unidad: String(r[2]||'').trim(),
-            metrado: m
+            metrado: parseFloat(r[3])||0
           });
         }
+        if (parsed.length === 0) {
+          showToast('⚠ No se encontraron partidas en G1. Verifica el formato.');
+          return;
+        }
+        g1 = parsed;
+        showLoaded('g1', file.name, g1.length, g1.slice(0,3));
+
+      } else {
+        // ── G2: Expediente ─ layout complejo peruano
+        // Busca hoja R. METRADOS, si no existe usa la primera
+        const sheetName = wb.SheetNames.find(n => n.trim().toUpperCase() === 'R. METRADOS')
+                          || wb.SheetNames[0];
+        const ws = wb.Sheets[sheetName];
+        const rows = XLSX.utils.sheet_to_json(ws, {header:1});
+        const parsed = [];
+
+        for (let i = 0; i < rows.length; i++) {
+          // Filtra celdas vacías/nulas de la fila
+          let r = rows[i].filter(v => v !== null && v !== undefined && v !== '');
+          if (!r.length) continue;
+
+          let first = String(r[0]).trim();
+
+          // Quita prefijo "OK" si el expediente tiene esa columna auxiliar
+          if (first.toLowerCase() === 'ok') {
+            r = r.slice(1);
+            first = String(r[0] || '').trim();
+          }
+
+          // ✅ FIX: regex universal — acepta CUALQUIER código formato peruano NN.NN...
+          // Ya NO está hardcodeado a '01.01.09.02'
+          if (!/^\d{2}\.\d{2}/.test(first) || first.length <= 6) continue;
+
+          // Necesita al menos 4 columnas: código, descripción, unidad, metrado
+          if (r.length >= 4) {
+            const m = parseFloat(String(r[3]).replace(',', '.'));
+            if (!isNaN(m)) {
+              parsed.push({
+                codigo: first,
+                descripcion: String(r[1] || '').trim(),
+                unidad: String(r[2] || '').trim(),
+                metrado: m
+              });
+            }
+          }
+        }
+
+        if (parsed.length === 0) {
+          showToast('⚠ No se encontraron partidas en G2. Verifica el formato del expediente.');
+          return;
+        }
+        g2 = parsed;
+        showLoaded('g2', file.name, g2.length, g2.slice(0,3));
       }
-      g2 = parsed;
-      showLoaded('g2', file.name, g2.length, g2.slice(0,3));
+    } catch(err) {
+      showToast('❌ Error al leer el archivo: ' + err.message);
     }
   };
   reader.readAsArrayBuffer(file);
@@ -806,7 +861,7 @@ function runMatch() {
 
   matchResults = [];
 
-  // Partidas en Revit
+  // Partidas en Revit → busca en expediente
   g1.forEach(p => {
     const exp = expMap[p.codigo];
     if (!exp) {
@@ -819,7 +874,7 @@ function runMatch() {
     }
   });
 
-  // Partidas solo en expediente
+  // Partidas solo en expediente (no modeladas en Revit)
   g2.forEach(p => {
     if (!revMap[p.codigo]) {
       matchResults.push({
@@ -829,50 +884,61 @@ function runMatch() {
     }
   });
 
-  // Sort by codigo
+  // Ordenar por código
   matchResults.sort((a,b) => a.codigo.localeCompare(b.codigo));
 
-  const ok = matchResults.filter(r=>r.status==='ok').length;
-  const diff = matchResults.filter(r=>r.status==='diff').length;
-  const mRev = matchResults.filter(r=>r.status==='miss-rev').length;
-  const mExp = matchResults.filter(r=>r.status==='miss-exp').length;
+  const ok      = matchResults.filter(r=>r.status==='ok').length;
+  const diff    = matchResults.filter(r=>r.status==='diff').length;
+  const mRev    = matchResults.filter(r=>r.status==='miss-rev').length;
+  const mExp    = matchResults.filter(r=>r.status==='miss-exp').length;
 
-  document.getElementById('st-ok').textContent = ok;
-  document.getElementById('st-diff').textContent = diff;
+  document.getElementById('st-ok').textContent      = ok;
+  document.getElementById('st-diff').textContent    = diff;
   document.getElementById('st-miss-rev').textContent = mRev;
   document.getElementById('st-miss-exp').textContent = mExp;
 
   renderTable('all');
+
+  // Marcar pasos 1 y 2 como completados
   [1,2].forEach(i => {
     document.getElementById('tab'+i).classList.add('done');
     document.getElementById('sn'+i).textContent = '✓';
   });
+
   goStep(3);
 }
 
 // ─── TABLE RENDER ─────────────────────────────────────────────
 function filterTable(f, btn) {
   currentFilter = f;
-  document.querySelectorAll('.mf-btn').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.mf-btn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
   renderTable(f);
 }
 
 function renderTable(filter) {
-  const rows = filter==='all' ? matchResults : matchResults.filter(r=>r.status===filter);
+  const rows = filter === 'all' ? matchResults : matchResults.filter(r => r.status === filter);
   const tbody = document.getElementById('result-tbody');
 
-  tbody.innerHTML = rows.map((r,i) => {
-    const rev = r.metrado !== null ? r.metrado.toFixed(4) : '—';
-    const exp = r.metrado_exp !== null ? r.metrado_exp.toFixed(4) : '—';
-    const diff = r.diff !== null ? (r.diff >= 0 ? '+' : '') + r.diff.toFixed(4) : '—';
-    const pct = r.pct !== null ? (r.pct >= 0 ? '+' : '') + r.pct.toFixed(2) + '%' : '—';
-    const diffCls = r.diff === null ? '' : Math.abs(r.diff) <= 0.05 ? 'diff-ok' : Math.abs(r.diff) <= 1 ? 'diff-warn' : 'diff-bad';
-    const revCls = r.metrado !== null ? 'num-ok' : '';
+  if (!rows.length) {
+    tbody.innerHTML = `<tr><td colspan="9" style="text-align:center; padding:28px; color:var(--text3)">Sin resultados para este filtro</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = rows.map((r, i) => {
+    const rev  = r.metrado     !== null ? r.metrado.toFixed(4)     : '—';
+    const exp  = r.metrado_exp !== null ? r.metrado_exp.toFixed(4) : '—';
+    const diff = r.diff        !== null ? (r.diff >= 0 ? '+' : '') + r.diff.toFixed(4) : '—';
+    const pct  = r.pct         !== null ? (r.pct  >= 0 ? '+' : '') + r.pct.toFixed(2) + '%' : '—';
+
+    const diffCls = r.diff === null ? ''
+      : Math.abs(r.diff) <= 0.05 ? 'diff-ok'
+      : Math.abs(r.diff) <= 1    ? 'diff-warn'
+      : 'diff-bad';
 
     let badge = '';
-    if (r.status==='ok') badge = '<span class="status-badge badge-ok">✓ OK</span>';
-    else if (r.status==='diff') badge = '<span class="status-badge badge-warn">⚠ Diferencia</span>';
+    if      (r.status==='ok')       badge = '<span class="status-badge badge-ok">✓ OK</span>';
+    else if (r.status==='diff')     badge = '<span class="status-badge badge-warn">⚠ Diferencia</span>';
     else if (r.status==='miss-rev') badge = '<span class="status-badge badge-missing-exp">✗ Falta en Revit</span>';
     else if (r.status==='miss-exp') badge = '<span class="status-badge badge-missing-rev">? No en Exp.</span>';
 
@@ -881,7 +947,7 @@ function renderTable(filter) {
       <td class="code-cell">${r.codigo}</td>
       <td class="desc-cell" title="${r.descripcion}">${r.descripcion.substring(0,52)}${r.descripcion.length>52?'…':''}</td>
       <td class="und-cell">${r.unidad||'—'}</td>
-      <td class="num-cell ${revCls}">${rev}</td>
+      <td class="num-cell ${r.metrado !== null ? 'num-ok' : ''}">${rev}</td>
       <td class="num-cell" style="color:var(--text2)">${exp}</td>
       <td class="num-diff ${diffCls}">${diff}</td>
       <td class="num-diff ${diffCls}">${pct}</td>
@@ -890,25 +956,28 @@ function renderTable(filter) {
   }).join('');
 }
 
-// ─── EXPORT ───────────────────────────────────────────────────
+// ─── EXPORT CSV ───────────────────────────────────────────────
 function exportCSV() {
   const headers = ['codigo_de_partida','descripcion','unidad','metrado_revit','metrado_expediente','diferencia','diferencia_pct','estado'];
   const rows = matchResults.map(r => [
     r.codigo,
-    '"'+r.descripcion.replace(/"/g,'""')+'"',
-    r.unidad||'',
-    r.metrado !== null ? r.metrado : '',
+    '"' + r.descripcion.replace(/"/g,'""') + '"',
+    r.unidad || '',
+    r.metrado     !== null ? r.metrado     : '',
     r.metrado_exp !== null ? r.metrado_exp : '',
-    r.diff !== null ? r.diff.toFixed(4) : '',
-    r.pct !== null ? r.pct.toFixed(2)+'%' : '',
+    r.diff        !== null ? r.diff.toFixed(4) : '',
+    r.pct         !== null ? r.pct.toFixed(2)+'%' : '',
     r.status
   ].join(','));
   const csv = [headers.join(','), ...rows].join('\n');
   const blob = new Blob(['\uFEFF'+csv], {type:'text/csv;charset=utf-8'});
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
-  a.href = url; a.download = 'BRH_Match_CA1_PV.csv'; a.click();
+  a.href = url;
+  a.download = 'BRH_Match_CA1_PV.csv';
+  a.click();
   URL.revokeObjectURL(url);
+  showToast('✓ CSV exportado correctamente');
 }
 </script>
 </body>
